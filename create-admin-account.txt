@@ -1,0 +1,13 @@
+php bin/magento admin:user:create --admin-user=truongdong --admin-password=Truong123456789 --admin-email=truongdong@commercers.com --admin-firstname=Dong --admin-lastname=Truong
+
+php bin/magento admin:user:create --admin-user=truongdong123 --admin-password=Truong123456789 --admin-email=truongdong123@commercers.com --admin-firstname=Dong123 --admin-lastname=Truong123
+
+php bin/magento admin:user:create --admin-user=Commercers --admin-password=Commercers2021 --admin-email=truongdong123456@commercers.com --admin-firstname=Truong12345 --admin-lastname=Dong12345
+
+php bin/magento admin:user:create --admin-user=CommercersVN --admin-password=Commercers2021 --admin-email=commercersVN@commercers.com --admin-firstname=Commercers --admin-lastname=VN
+
+php bin/magento admin:user:create --admin-user=CommercersDE --admin-password=Commercers2021 --admin-email=commercersDE@commercers.com --admin-firstname=Commercers --admin-lastname=DE
+
+php bin/magento admin:user:create --admin-user=itad2021 --admin-password=Truong123456789 --admin-email=dongvantruong1117@gmail.com --admin-firstname=Itad --admin-lastname=2021
+
+php bin/magento admin:user:create --admin-user=maitram --admin-password=Tram123456789 --admin-email=maitram1117@gmail.com --admin-firstname=Mai --admin-lastname=Tram
