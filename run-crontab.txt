@@ -1,0 +1,15 @@
+php n98-magerun2.phar sys:cron:run product_allocation_clean_up
+php n98-magerun2.phar sys:cron:run product_allocation_automation
+~~~~~~~~~~~~~~~~~
+
+You can try php n98-magerun2.phar sys:cron:run
+List of crons
+php n98-magerun2.phar sys:cron:list
+Single cron run
+php n98-magerun2.phar sys:cron:run remove_product_out_category
+
+php n98-magerun2.phar sys:cron:run product_allocation_clean_up
+
+php n98-magerun2.phar sys:cron:run catalog_product_alert
+
+bin/magento queue:consumers:start exportProcessor
