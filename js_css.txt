@@ -1,0 +1,94 @@
+
+frontend: 
+rm -rf var/cache/
+rm -rf var/page_cache/
+rm -rf var/view_preprocessed/
+rm -rf pub/static/frontend/*
+php bin/magento s:s:d -f en_US de_DE --area frontend 
+php bin/magento s:s:d -f --area frontend 
+
+php -dmemory_limit=5G bin/magento s:s:d -f de_DE --area frontend
+
+
+php -dmemory_limit=5G bin/magento s:s:d -f de_DE --area frontend
+php -dmemory_limit=5G bin/magento s:s:d -f en_US --area frontend
+
+php -dmemory_limit=5G bin/magento s:s:d -f en_US de_DE --area frontend
+
+php bin/magento s:s:d -f en_US de_DE --area frontend --theme Smartwave/porto
+
+backend: 
+rm -rf var/cache/
+rm -rf var/page_cache/
+rm -rf var/view_preprocessed/	
+rm -rf pub/static/adminhtml/*
+bin/magento s:s:d -f --area adminhtml de_DE en_US
+php -dmemory_limit=5G bin/magento s:s:d -f --area adminhtml de_DE en_US
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Both:
+rm -rf var/cache/
+rm -rf var/page_cache/
+rm -rf var/view_preprocessed/
+rm -rf pub/static/*
+php bin/magento s:s:d -f de_DE en_US
+php -dmemory_limit=5G bin/magento s:s:d -f de_DE en_US
+~~~~~~~~~~~~~~~~~~~
+bin/magento s:s:d -f --area frontend de_DE en_US --theme Sm/shop4u
+bin/magento s:s:d -f --area frontend de_DE en_US --theme Commercers/Begadi
+
+bin/magento s:s:d -f --area adminhtml de_DE en_US --theme Commercers/Begadi
+
+php bin/magento s:s:d -f --area frontend de_DE --theme Commercers/Begadi
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+php -dmemory_limit=5G bin/magento s:s:d -f --area frontend de_DE --theme Sm/shop4u
+
+php -dmemory_limit=5G bin/magento indexer:reindex
+
+For Compilation command,
+
+php -dmemory_limit=5G bin/magento setup:di:compile
+For Deployment
+
+php -dmemory_limit=5G bin/magento setup:static-content:deploy -f
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+php bin/magento s:s:d -f de_DE en_US
+php bin/magento s:s:d -f --area adminhtml de_DE en_US
+php bin/magento s:s:d -f --area frontend de_DE --theme TemplateMonster/theme007
+backend:
+	
+bin/magento s:s:d -f en_US de_DE adminhtml
+
+Two section:
+rm -rI pub/static/*
+bin/magento s:s:d -f en_US de_DE
+
+bin/magento setup:static-content:deploy -f frontend/Sm/shop4u/de_DE 
+
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+sudo chown -R magento2:www-data pub/
+
+grunt clean
+
+grunt exec
+
+grunt less
+
+php bin/magento indexer:reindex
+
+
+NOTE: rm -rI pub/static/ will delete file .htaccess in pub/static/
+
+
+~~~~~~~~~~~~~~~~~
+install extensions
+
+php -dmemory_limit=5G composer.phar require magepal/magento2-googletagmanager --no-plugins --ignore-platform-reqs
+
+php -dmemory_limit=5G composer.phar remove magepal/magento2-googletagmanager --no-plugins --ignore-platform-reqs
