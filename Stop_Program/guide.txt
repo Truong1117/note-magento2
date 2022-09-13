@@ -1,0 +1,6 @@
+ use Magento\Framework\Exception\InputException;
+
+ 
+throw new InputException(
+                __($messageError)
+            );

@@ -1,0 +1,270 @@
+
+	link: https://www.webnexs.com/blog/kb/use-ui-export-button-component-magento-2/
+
+
+1. Create a Admin Grid using UI-Component
+[vendor_name] \ [module_name] \view\adminhtml\ui_component
+Ui-ComponentFIleName.xml
+<item name="buttons" xsi:type="array">
+
+    <item name="import" xsi:type="array">
+        <item name="name" xsi:type="string">import</item>
+        <item name="label" xsi:type="string" translate="true">Import</item>
+        <item name="class" xsi:type="string">secondary</item>
+        <item name="url" xsi:type="string">*/*/importdata</item>
+        <item name="sortOrder" xsi:type="number">20</item>
+    </item>
+
+    <item name="export" xsi:type="array">
+        <item name="name" xsi:type="string">export</item>
+        <item name="label" xsi:type="string" translate="true">Export</item>
+        <item name="class" xsi:type="string">secondary</item>
+        <item name="url" xsi:type="string">*/*/exportdata</item>
+        <item name="sortOrder" xsi:type="number">30</item>
+    </item>
+
+</item>
+
+2. File path must be like this
+[vendor_name] \ [module_name] \ Controller \ Adminhtml \ [Controller_name] \ Exportdata.php
+
+<?php
+
+namespace [vendor_name]\[module_name]\Controller\Adminhtml\[Controller_name];
+
+use Magento\Framework\App\Filesystem\DirectoryList;
+
+
+class Exportdata extends \Magento\Backend\App\Action
+{
+    protected $uploaderFactory;
+
+    protected $_locationFactory; 
+
+    public function __construct(
+        \Magento\Backend\App\Action\Context $context,
+        \Magento\Framework\App\Response\Http\FileFactory $fileFactory,
+        \Magento\Framework\Filesystem $filesystem,
+        \[vendor_name]\[module_name]\Model\locatorFactory $locationFactory // This is returns Collaction of Data
+
+    ) {
+       parent::__construct($context);
+       $this->_fileFactory = $fileFactory;
+       $this->_locationFactory = $locationFactory;
+       $this->directory = $filesystem->getDirectoryWrite(DirectoryList::VAR_DIR); // VAR Directory Path
+       parent::__construct($context);
+    }
+
+    public function execute()
+    {   
+        $name = date('m-d-Y-H-i-s');
+        $filepath = 'export/export-data-' .$name. '.csv'; // at Directory path Create a Folder Export and FIle
+        $this->directory->create('export');
+
+        $stream = $this->directory->openFile($filepath, 'w+');
+        $stream->lock();
+
+        //column name dispay in your CSV 
+
+        $columns = ['Col-1-name','Col-2-name','Col-3-name','Col-4-name','Col-5-name','Col-6-name','Col-7-name','Col-8-name','Col-9-name',];
+
+            foreach ($columns as $column) 
+            {
+                $header[] = $column; //storecolumn in Header array
+            }
+
+        $stream->writeCsv($header);
+
+        $location = $this->_locationFactory->create();
+        $location_collection = $location->getCollection(); // get Collection of Table data 
+
+        foreach($location_collection as $item){
+
+            $itemData = [];
+
+            // column name must same as in your Database Table 
+
+            $itemData[] = $item->getData('col-1-name');
+            $itemData[] = $item->getData('col-2-name');
+            $itemData[] = $item->getData('col-3-name');
+            $itemData[] = $item->getData('col-4-name');
+            $itemData[] = $item->getData('col-5-name');
+            $itemData[] = $item->getData('col-6-name');
+            $itemData[] = $item->getData('col-7-name');
+            $itemData[] = $item->getData('col-8-name');
+            $itemData[] = $item->getData('col-9-name');
+
+            $stream->writeCsv($itemData);
+
+        }
+
+        $content = [];
+        $content['type'] = 'filename'; // must keep filename
+        $content['value'] = $filepath;
+        $content['rm'] = '1'; //remove csv from var folder
+
+        $csvfilename = 'locator-import-'.$name.'.csv';
+        return $this->_fileFactory->create($csvfilename, $content, DirectoryList::VAR_DIR);
+
+    }
+
+
+}
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Option 2:
+listing.xml
+<exportButton class="Magento\Ui\Component\ExportButton">
+    <argument name="data" xsi:type="array">
+        <item name="config" xsi:type="array">
+            <item name="options" xsi:type="array">
+                <item name="selectProvider" xsi:type="string">
+                    product_listing.product_listing.product_columns.ids
+                </item>
+                <item name="cvs" xsi:type="array">
+                    <item name="value" xsi:type="string">csv</item>
+                    <item name="label" xsi:type="string" translate="true">CSV</item>
+                    <item name="url" xsi:type="string">employee/export/gridToCsv</item>
+                </item>
+                <item name="xml" xsi:type="array">
+                    <item name="value" xsi:type="string">xml</item>
+                    <item name="label" xsi:type="string" translate="true">Excel XML</item>
+                    <item name="url" xsi:type="string">employee/export/gridToXml</item>
+                </item>
+            </item>
+        </item>
+    </argument>
+</exportButton>
+
+In 
+app/code/Vendor/Employee/Controller/Adminhtml/Export/GridToCsv.php
+<?php
+namespace Vendor\Employee\Controller\Adminhtml\Export;
+use Magento\Backend\App\Action;
+use Magento\Backend\App\Action\Context;
+use Magento\Framework\App\ResponseInterface;
+use Magento\Framework\App\Filesystem\DirectoryList;
+use Magento\Framework\App\Response\Http\FileFactory;
+class gridToCsv extends Action
+{
+
+public function execute()
+{
+        //csv
+        $this->_view->loadLayout(false);
+        $fileName = 'catalog_products.csv';
+        $exportBlock = $this->_view->getLayout()->createBlock('Magento\Catalog\Block\Adminhtml\Product\Grid');
+        $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+        $this->_fileFactory = $objectManager->create('Magento\Framework\App\Response\Http\FileFactory');
+        return $this->_fileFactory->create(
+            $fileName,
+            $exportBlock->getCsvFile(),
+            DirectoryList::VAR_DIR
+        );
+
+}
+}
+
+
+~~~~~~~~~~~~~~~~~~~~~~~
+option 3:
+
+<?php
+
+/**
+ * Webkul Software.
+ *
+ * @category  Webkul
+ * @package   Webkul_FilterCollectionTest
+ * @author    Webkul
+ * @copyright Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ * @license   https://store.webkul.com/license.html
+ */
+
+namespace Mageplaza\HelloWorld\Ui\Component;
+
+use Magento\Framework\View\Element\UiComponentInterface;
+use Magento\Framework\DataObject;
+use Magento\Framework\Exception\LocalizedException;
+use Magento\Framework\View\Element\UiComponentFactory;
+use Magento\Framework\View\Element\UiComponent\ContextInterface;
+use Magento\Framework\View\Element\UiComponent\DataSourceInterface;
+use Magento\Framework\View\Element\UiComponent\ObserverInterface;
+use Magento\Framework\Data\ValueSourceInterface;
+
+/**
+ * Class ExportButton
+ */
+class ExportButton extends \Magento\Ui\Component\AbstractComponent
+{
+    /**
+     * Component name
+     */
+    const NAME = 'exportButton';
+
+    /**
+     * @var \Magento\Framework\UrlInterface
+     */
+    protected $_urlBuilder;
+
+    /**
+     * @var \Magento\Framework\App\Request\Http
+     */
+    protected $_request;
+
+    /**
+     * @param ContextInterface $context
+     * @param UrlInterface $urlBuilder
+     * @param \Magento\Framework\App\Request\Http $request
+     * @param array $components
+     * @param array $data
+     */
+    public function __construct(
+        \Magento\Framework\View\Element\UiComponent\ContextInterface $context,
+        \Magento\Framework\UrlInterface $urlBuilder,
+        \Magento\Framework\App\Request\Http $request,
+        array $components = [],
+        array $data = []
+    ) {
+        parent::__construct($context, $components, $data);
+        $this->_urlBuilder = $urlBuilder;
+        $this->_request = $request;
+    }
+
+    /**
+     * @return void
+     */
+
+    public function prepare()
+    {
+        $postId = $this->_request->getParam('post_id');
+        if (isset($postId)) {
+            $configData = $this->getData('config');
+            if (isset($configData['options'])) {
+                $configOptions = [];
+                foreach ($configData['options'] as $configOption) {
+                    $configOption['url'] = $this->_urlBuilder->getUrl(
+                        $configOption['url'],
+                        ["post_id" => $postId]
+                    );
+                    $configOptions[] = $configOption;
+                }
+                $configData['options'] = $configOptions;
+                $this->setData('config', $configData);
+            }
+        }
+        parent::prepare();
+
+    }
+}
+
+listing.xml
+
+ <!-- <exportButton name="export_button" class="Mageplaza\HelloWorld\Ui\Component\ExportButton">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="selectProvider" xsi:type="string">mageplaza_helloworld_postblock_listing.mageplaza_helloworld_postblock_listing.helloworld_post_columns.ids</item>
+                </item>
+            </argument>
+        </exportButton> -->

@@ -1,0 +1,77 @@
+1. app/code/Commercers/NewArticle/etc/crontab.xml
+
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Cron:etc/crontab.xsd">
+    <group id="default">
+        <job name="remove_product_out_category" instance="Commercers\NewArticle\Cron\RemoveProductOutCategory" method="execute">
+            <schedule>0 0 * * *</schedule>
+        </job>
+    </group>
+</config>
+
+~~~~~~~~~~~~~~~~~~~~~~
+2. app/code/Commercers/NewArticle/Cron/RemoveProductOutCategory.php
+
+<?php
+namespace Commercers\NewArticle\Cron;
+
+class RemoveProductOutCategory {
+    const CATEGORY_NEW_ARTICLE_ID = 3;
+    /** @var \Magento\Catalog\Model\ResourceModel\Product\CollectionFactory */
+    protected $_productCollectionFactory;
+
+    /**
+     * Locale Date/Timezone
+     * @var \Magento\Framework\Stdlib\DateTime\TimezoneInterface
+     */
+    protected $_timezone;
+
+    protected $_categoryLinkRepository;
+
+    protected $_logger;
+    public function __construct(
+        \Psr\Log\LoggerInterface $logger,
+        \Magento\Catalog\Model\CategoryLinkRepositoryFactory $categoryLinkRepositoryFactory,
+        \Magento\Catalog\Model\ResourceModel\Product\CollectionFactory $collectionFactory,
+        \Magento\Catalog\Block\Product\Context $context,
+        array $data = []
+    ) {
+        $this->_logger = $logger;
+        $this->_categoryLinkRepository = $categoryLinkRepositoryFactory;
+        $this->_productCollectionFactory = $collectionFactory;
+        $this->_timezone = $context->getLocaleDate();
+    }
+    public function execute(){
+        $currentTime = strtotime($this->getTodayDate());
+        foreach ($this->getProductCollection() as $product){
+            $newToDateProduct = $product->getNewsToDate();
+            if(!is_null($newToDateProduct)){
+                $timeNewToDateProduct = strtotime($newToDateProduct);
+                $diffTime = ($currentTime - $timeNewToDateProduct);
+                if($diffTime>0){
+                    $categoryId = self::CATEGORY_NEW_ARTICLE_ID;
+                    $sku = $product->getSku();
+                    $this->_categoryLinkRepository->create()->deleteByIds($categoryId,$sku);
+                    $product->setNewsToDate('');
+                    $product->setNewsFromDate('');
+                    $product->save();
+                }
+            }
+        }
+        return ;
+    }
+    public function getProductCollection()
+    {
+        $collection = $this->_productCollectionFactory->create();
+        $collection->addAttributeToSelect(
+            [
+                'name','news_to_date', 'sku','entity_id'
+            ]
+        );
+        return $collection;
+    }
+    public function getTodayDate(){
+        return $this->_timezone->date()->format('Y-m-d H:i:s');
+    }
+
+}

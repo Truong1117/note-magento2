@@ -1,0 +1,3 @@
+Module: Commercer_EmailTemplate in shop MYO
+
+https://magento.stackexchange.com/questions/160382/magento-2-send-different-email-templates-for-ship-based-on-shipping-method-cho

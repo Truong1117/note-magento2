@@ -1,0 +1,65 @@
+How to get product collection in Magento 2
+
+Overview of getting product collection in Magento 2
+
+~~~~~~~~~~
+Step 1: Declare in Mageplaza_HelloWorld Block
+
+You will use a block class of the module Mageplaza_HelloWorld, then possibly inject the object of 
+\Magento\Catalog\Model\ResourceModel\Product\CollectionFactory in the constructor of the module’s 
+block class.
+
+app/code/Mageplaza/HelloWorld/Block/HelloWorld.php
+
+<?php
+namespace Mageplaza\HelloWorld\Block;
+class HelloWorld extends \Magento\Framework\View\Element\Template
+{    
+    protected $_productCollectionFactory;
+        
+    public function __construct(
+        \Magento\Backend\Block\Template\Context $context,        
+        \Magento\Catalog\Model\ResourceModel\Product\CollectionFactory $productCollectionFactory,        
+        array $data = []
+    )
+    {    
+        $this->_productCollectionFactory = $productCollectionFactory;    
+        parent::__construct($context, $data);
+    }
+    
+    public function getProductCollection()
+    {
+        $collection = $this->_productCollectionFactory->create();
+        $collection->addAttributeToSelect('*');
+        $collection->setPageSize(3); // fetching only 3 products
+        return $collection;
+    }
+}
+?>
+
+You can request the number of the product collection, that is a limited or unlimited number.
+
+~~~~~~~~~~~~~~~~~~~~~
+Step 2: Display product collection in phtml file
+
+Print out the product collection in phtml file with the below code:
+
+$productCollection = $block->getProductCollection();
+foreach ($productCollection as $product) {
+    print_r($product->getData());     
+    echo "<br>";
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+

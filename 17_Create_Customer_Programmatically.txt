@@ -1,0 +1,47 @@
+***
+Overview of creating customer programmatically
+***
+~ Run the code snippet
+~ Summary
+
+~~~~~~~~~~~~~~~~~~~~~~
+Run the code snippet
+
+The following code snippet is all you need to work, 
+please insert it into the console when you want to create customer programmatically.
+$objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+        $customerSetupFactory = $objectManager->create('Magento\Customer\Setup\CustomerSetupFactory');
+
+        $setupInterface = $objectManager->create('Magento\Framework\Setup\ModuleDataSetupInterface');
+
+        $customerSetup = $customerSetupFactory->create(['setup' => $setupInterface]);
+
+        $customerEntity = $customerSetup->getEavConfig()->getEntityType('customer');
+        $attributeSetId = $customerEntity->getDefaultAttributeSetId();
+
+        $attributeSetFactory = $objectManager->create('Magento\Eav\Model\Entity\Attribute\SetFactory');
+
+        /** @var $attributeSet AttributeSet */
+        $attributeSet = $attributeSetFactory->create();
+        $attributeGroupId = $attributeSet->getDefaultGroupId($attributeSetId);
+
+        $customerSetup->addAttribute(\Magento\Customer\Model\Customer::ENTITY, 'attribute_code', [
+            'type' => 'varchar',
+            'label' => 'Attribute Title',
+            'input' => 'text',
+            'required' => false,
+            'visible' => true,
+            'user_defined' => true,
+            'sort_order' => 1000,
+            'position' => 1000,
+            'system' => 0,
+        ]);
+        //add attribute to attribute set
+        $attribute = $customerSetup->getEavConfig()->getAttribute(\Magento\Customer\Model\Customer::ENTITY, 'attribute_code')
+        ->addData([
+            'attribute_set_id' => $attributeSetId,
+            'attribute_group_id' => $attributeGroupId,
+            'used_in_forms' => ['adminhtml_customer'],
+        ]);
+
+        $attribute->save();

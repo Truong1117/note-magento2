@@ -1,0 +1,96 @@
+link: https://devdocs.magento.com/guides/v2.4/frontend-dev-guide/tools/using_grunt.html
+
+~~~~~~~~~~~~~~
+I. Installing and configuring Grunt
+
+1. Install node.js to any location on your machine.
+
+2. Install Grunt CLI tool globally. To do this, run the following command in a command prompt:
+
+npm install -g grunt-cli
+
+3. From the <Magento_root> directory, copy and paste the contents of the following files:
+
+	~ package.json.sample into package.json
+
+	~ Gruntfile.js.sample into Gruntfile.js
+
+	~ grunt-config.json.sample into grunt-config.json
+
+4. Install (or refresh) the node.js project dependency, including Grunt, for your Magento instance. 
+To do this, run the following commands in a command prompt:
+
+cd your_Magento_instance_directory
+
+npm install
+
+npm update
+
+~~~~~~~~~~~~~~~~
+II. Grunt configuration file
+
+~~~~~~~~~~~~~~~~~
+III. Using custom Grunt configuration files
+
+1. How to declare custom config file: Option 1
+
+To use a custom file for Grunt configuration:
+
+ ~ Copy the default configuration file to the preferred location in the Magento instance directory. 
+Do not change the file name.
+
+ ~ Open the grunt-config.json file in the Magento root and set configurations object as follows.
+
+	~~ key: file alias
+	
+	~~ value: path to your custom file
+
+Example: If your custom configuration file local-themes.js is located in the 
+<magento_root>/dev/tools/grunt/configs directory, the following is already set in your grunt-config.json:
+
+{
+    "themes": "dev/tools/grunt/configs/local-themes"
+}
+
+This path is also added to your .gitignore by default.
+
+~~~~~~~~~~~~~~~~~~~
+2. How to declare custom configuration file: Option 2
+
+You can also use the other way to declare a custom config file:
+
+~ In your Grunt related scripts, in the file router set the alias and path to the default configuration file. 
+For example, for the themes.js configuration file this would look like following:
+
+		filesRouter.set('themes', 'dev/tools/grunt/configs/themes');
+
+~ It must be added earlier, than the get() method with this alias is called.
+
+~ In the dev/tools/grunt/configs/ directory, create a copy of the default configuration file. 
+Change its name by adding the “.loc” suffix. For example, your copy of themes.js will be themes.loc.js.
+
+~~~~~~~~~~~~~~~~~~~~
+3. How to use custom configuration file
+
+To tell Grunt to use a custom configuration file, instead of the default one, add the following in your script:
+
+~ Require file-router:
+
+	var fileRouter = require('/files-router');
+
+~ Call the get(%file_alias%) method to get the configuration file.
+
+	var themes = fileRouter.get('themes');
+
+
+
+
+
+
+
+
+
+
+
+
+

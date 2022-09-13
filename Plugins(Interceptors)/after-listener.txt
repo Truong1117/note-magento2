@@ -1,0 +1,45 @@
+params:
+- first: class parent
+- next: all params parent has 
+- last: result - is result return of parent 
+
+~~~~~~~~~~~~~~~~
+2. After Listener
+
+~ After listeners are used when we want to change values returned by an original method or want to add some 
+behavior after an original method is called.
+
+~ We will use after listeners to change behavior of getName method of Magento\Catalog\Model\Product.
+
+~ This method returns the name of Product.
+
+~ Original Method is
+
+public function getName()
+
+   <type name="Magento\Catalog\Model\Product">
+        <plugin name="Commercers_Ticket_Product" type="Commercers\Ticket\Plugin\Checkout\Model\Product" sortOrder="2" />
+    </type>
+
+~ Now create file Product.php in folder ‘Commercers\Ticket\Plugin\Checkout\Model’.
+
+~ After listener is called by adding prefix ‘after’ to the method name and setting first letter of original 
+method to capital.
+
+~ Now method addProduct will become afterGetName.
+
+<?php
+
+namespace Commercers\Ticket\Plugin\Checkout\Model;
+
+class Product
+{
+    public function afterGetName(\Magento\Catalog\Model\Product $subject, $result)
+    {
+        return "Thor|" . $result; // Adding Thor in product name
+    }
+}
+
+
+
+

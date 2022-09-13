@@ -1,0 +1,44 @@
+***
+Add a New CMS Page 
+***
+~ Step 1: Add a New Page
+~ Step 2: Choose the Page Layout
+~ Step 3: Enter the Content
+~ Step 4: Enter the Meta Data
+~ Step 5: Preview the Page
+~ Step 6: Generate the Page
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+Step 1: Add a New Page
+
+On the Admin Panel, Content > Elements > Pages.
+
+Click on Add New Page.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+Step 2: Choose the Page Layout
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+Step 3: Enter the Content
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+Step 4: Fill out the Meta Data
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+Step 5: Preview the Page
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+Step 6: Generate the Page
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+Assign a Home Page 
+
+You can assign any page as a Home Page according to the following guide:
+
+~ Finish all steps to create a new page.
+~ On the Admin Panel, Stores > Settings > Configuration.
+~ On the left panel, under General, select Web.
+~ Open the Default Pages section,
+	~~ Set CMS Page as Home Page in the CMS Page field.
+	~~ Save Config to activate the settings.
+~ Click on the Cache Management link in the system message to flush your cache. 
+

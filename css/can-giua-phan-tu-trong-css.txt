@@ -1,0 +1,88 @@
+I. Theo chiều ngang
+
+.center-parent {
+  text-align: center;
+}
+
+.center-me {
+  margin: 0 auto;
+}
+
+~~~~~~~~~~~~~~~~~~~~
+1.Có phải có hơn một phần tử block-level?
+
+Nếu bạn có hai hoặc nhiều hơn các phần tử block-level cần được căn giữa trong một hàng. 
+Tốt hơn hết bạn nên thay đổi cách chúng display sang inline-block.
+
+.center-parent {
+  text-align: center;
+}
+
+.center-me {
+  display: inline-block;
+}
+
+hoặc bạn cũng có thể sử dụng flexbox:
+
+.center-parent {
+  display: flex;
+  justify-content: center;
+}
+
+~~~~~~~~~~~~~~~~~~~~
+2. Theo chiều dọc
+
+Đó có phải là phần tử inline hay inline-* (như text hay links)?
+Phần tử đó chỉ chiếm một dòng?
+
+~ Thường những phần tử inline/text có thể căn giữa chỉ vì chúng có padding trên và dưới bằng nhau:
+
+.center-me {
+   padding-top: 30px;
+   padding-bottom: 30px;
+}
+
+~ Nếu không thể sử dụng padding vì lý do nào đó và bạn đang tìm cách căn giữa text mà bạn nghĩ sẽ không wrap, 
+bạn có thể set line-height bằng với height:
+
+.center-me {
+  height: 100px;
+  line-height: 100px;
+  white-space: nowrap;
+}
+
+~ Phần tử đó chiếm nhiều dòng?
+
+Việc set padding bằng nhau với top và bottom cũng có thể giups căn giữa những phần tử nhiều dòng. 
+Tuy nhiên trong trường hợp phần tử được tạo ra tương tự với một table cell thì ta có thể gán thuộc tính 
+vetical-align với giá trị middle
+
+.center-me {
+  verticle-align: middle;
+}
+
+Bạn cũng có thể dùng flexbox với giá trị của flex-direction là column và fix height:
+
+.flex-center-vertically {
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  height: 400px;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

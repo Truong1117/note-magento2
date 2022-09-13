@@ -1,0 +1,5 @@
+Backend:
+
+Marketing->Cart Price Rules 
+
+-> Add New Rule

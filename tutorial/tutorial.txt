@@ -1,0 +1,50 @@
+************
+1. reset_the_admin_password
+update admin_user SET `password` = SHA2('abc1234',256) WHERE username = 'name_admin';
+
+***********
+Reindex magento 2
+
+~ bin/magento indexer:status
+
+~ bin/magento indexer:show-mode
+
+~ bin/magento indexer:reindex
+
+Change the mode of a single table to `UPDATE ON SAVE`
+bin/magento indexer:set-mode realtime [name]
+
+***********
+3.How to find help with Magento 2 when you run into problems.
+
+~ Magento stack exchange
+https://magento.stackexchange.com/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

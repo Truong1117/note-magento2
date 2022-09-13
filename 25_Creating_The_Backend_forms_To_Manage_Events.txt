@@ -1,0 +1,606 @@
+***
+Creating the backend forms to manage events
+***
+=============================
+I. Create Controller
+
+1. Create NewAction.php
+app\code\Mageplaza\HelloWorld\Controller\Adminhtml\Post\NewAction.php
+
+<?php
+
+namespace Mageplaza\HelloWorld\Controller\Adminhtml\Post;
+
+use Magento\Backend\Model\View\Result\ForwardFactory;
+use Magento\Backend\App\Action\Context;
+
+class NewAction extends \Magento\Backend\App\Action
+{
+    protected $resultForwardFactory;
+
+    public function __construct(
+        Context $context,
+        ForwardFactory $resultForwardFactory
+    ) {
+        $this->resultForwardFactory = $resultForwardFactory;
+        parent::__construct($context);
+    }
+    public function execute()
+    {
+        /** @var \Magento\Backend\Model\View\Result\Forward $resultForward */
+        $resultForward = $this->resultForwardFactory->create();
+        return $resultForward->forward('edit');
+    }
+}
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+2. Create Edit.php 
+app\code\Mageplaza\HelloWorld\Controller\Adminhtml\Post\Edit.php
+
+<?php
+
+namespace Mageplaza\HelloWorld\Controller\Adminhtml\Post;
+
+use Magento\Backend\App\Action;
+use Magento\Backend\App\Action\Context;
+use Magento\Framework\Registry;
+use Magento\Framework\View\Result\PageFactory;
+use Mageplaza\HelloWorld\Model\PostFactory;
+
+class Edit extends Action
+{
+	/**
+	 * @var Registry
+	 */
+	protected $_coreRegistry = null;
+
+	/**
+	 * @var PageFactory
+	 */
+	protected $resultPageFactory;
+
+	/**
+	 * @var PostFactory
+	 */
+	protected $_post;
+
+	public function __construct(
+		Context $context,
+		PageFactory $resultPageFactory,
+		Registry $registry,
+		PostFactory $post
+	) {
+		$this->resultPageFactory = $resultPageFactory;
+		$this->_coreRegistry = $registry;
+		$this->_post = $post;
+		parent::__construct($context);
+	}
+
+	protected function _isAllowed()
+	{
+		return $this->_authorization->isAllowed('Mageplaza_HelloWorld::index');
+	}
+
+	public function execute()
+	{
+		$id = $this->getRequest()->getParam('post_id');
+		$post = $this->_post->create();
+
+		if ($id) {
+			$post->load($id);
+			if (!$post->getId()) {
+				$this->messageManager->addErrorMessage(__('This record no longer exists.'));
+				$resultRedirect = $this->resultRedirectFactory->create();
+				return $resultRedirect->setPath('*/*/');
+			}
+		}
+
+		$data = $this->_session->getFormData(true);
+		if (!empty($data)) {
+			$post->addData($data);
+		}
+
+		$this->_coreRegistry->register('post_id', $id);
+
+		$resultPage = $this->resultPageFactory->create();
+		$resultPage->getConfig()->getTitle()->prepend((__('Posts')));
+		return $resultPage;
+	}
+}
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+3. Create Delete.php
+app\code\Mageplaza\HelloWorld\Controller\Adminhtml\Post\Delete.php
+
+<?php
+
+namespace Mageplaza\HelloWorld\Controller\Adminhtml\Post;
+
+use Magento\Backend\App\Action;
+use Magento\Backend\App\Action\Context;
+use Mageplaza\HelloWorld\Model\PostFactory;
+
+class Delete extends Action
+{
+	/**
+	 * @var PostFactory
+	 */
+	protected $_post;
+
+	public function __construct(
+		Context $context,
+		PostFactory $post
+	) {
+		$this->_post = $post;
+		parent::__construct($context);
+	}
+
+	protected function _isAllowed()
+	{
+		return $this->_authorization->isAllowed('Mageplaza_HelloWorld::index');
+	}
+
+	public function execute()
+	{
+		$resultRedirect = $this->resultRedirectFactory->create();
+		$id = $this->getRequest()->getParam('post_id', null);
+
+		try {
+			$post = $this->_post->create()->load($id);
+			if ($post->getId()) {
+				$post->delete();
+				$this->messageManager->addSuccessMessage(__('You deleted the record.'));
+			} else {
+				$this->messageManager->addErrorMessage(__('Record does not exist.'));
+			}
+		} catch (\Exception $exception) {
+			$this->messageManager->addErrorMessage($exception->getMessage());
+		}
+
+		return $resultRedirect->setPath('*/*');
+	}
+}
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+4. Create Save.php
+app\code\Mageplaza\HelloWorld\Controller\Adminhtml\Post\Save.php
+<?php
+
+namespace Mageplaza\HelloWorld\Controller\Adminhtml\Post;
+
+use Magento\Backend\App\Action;
+use Magento\Backend\App\Action\Context;
+use Mageplaza\HelloWorld\Model\PostFactory;
+
+class Save extends Action
+{
+	/**
+	 * @var PostFactory
+	 */
+	protected $_post;
+
+	public function __construct(
+		Context $context,
+		PostFactory $post
+	) {
+		$this->_post = $post;
+		parent::__construct($context);
+	}
+
+	protected function _isAllowed()
+	{
+		return $this->_authorization->isAllowed('Mageplaza_HelloWorld::index');
+	}
+
+	public function execute()
+	{
+		$storeId = (int)$this->getRequest()->getParam('store_id');
+		$data = $this->getRequest()->getParams();
+		$resultRedirect = $this->resultRedirectFactory->create();
+		if ($data) {
+			$params = [];
+			$post = $this->_post->create();
+			$post->setStoreId($storeId);
+			$params['store'] = $storeId;
+			if (empty($data['post_id'])) {
+				$data['post_id'] = null;
+			} else {
+				$post->load($data['post_id']);
+				$params['post_id'] = $data['post_id'];
+			}
+			$post->addData($data);
+			try {
+				$post->save();
+				$this->messageManager->addSuccessMessage(__('You saved this record.'));
+				$this->_getSession()->setFormData(false);
+
+				if ($this->getRequest()->getParam('back')) {
+					$params['post_id'] = $post->getPostId();
+					$params['_current'] = true;
+					return $resultRedirect->setPath('*/*/edit', $params);
+				}
+				return $resultRedirect->setPath('*/*/');
+			} catch (\Exception $e) {
+				$this->messageManager->addErrorMessage($e->getMessage());
+				$this->messageManager->addExceptionMessage($e, __('Something went wrong while saving the record.'));
+			}
+
+			$this->_getSession()->setFormData($this->getRequest()->getPostValue());
+			return $resultRedirect->setPath('*/*/edit', $params);
+		}
+		return $resultRedirect->setPath('*/*/');
+	}
+}
+
+=============================
+II. Create Block
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+1.BackButton.php
+app\Mageplaza\HelloWorld\Block\Adminhtml\Post\Edit\BackButton.php
+
+<?php
+namespace Mageplaza\HelloWorld\Block\Adminhtml\Post\Edit;
+
+use Magento\Backend\Block\Widget\Context;
+use Magento\Framework\View\Element\UiComponent\Control\ButtonProviderInterface;
+
+class BackButton implements ButtonProviderInterface
+{
+	/**
+	 * @var UrlInterface
+	 */
+	protected $urlBuilder;
+
+	public function __construct(Context $context)
+	{
+		$this->urlBuilder = $context->getUrlBuilder();
+	}
+
+	public function getButtonData()
+	{
+		return [
+			'label' => __('Back'),
+			'on_click' => sprintf("location.href = '%s';", $this->getBackUrl()),
+			'class' => 'back',
+			'sort_order' => 10
+		];
+	}
+
+	public function getBackUrl()
+	{
+		return $this->urlBuilder->getUrl('*/*/');
+	}
+}
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+2. DeleteButton.php
+app\Mageplaza\HelloWorld\Block\Adminhtml\Post\Edit\DeleteButton.php
+<?php
+
+namespace Mageplaza\HelloWorld\Block\Adminhtml\Post\Edit;
+
+use Magento\Backend\Block\Widget\Context;
+use Magento\Framework\Registry;
+use Magento\Framework\View\Element\UiComponent\Control\ButtonProviderInterface;
+
+class DeleteButton implements ButtonProviderInterface
+{
+    /**
+     * @var UrlInterface
+     */
+    protected $urlBuilder;
+
+    /**
+     * @var Registry
+     */
+    protected $registry;
+
+    public function __construct(
+        Context $context,
+        Registry $registry
+    ) {
+        $this->urlBuilder = $context->getUrlBuilder();
+        $this->registry = $registry;
+    }
+
+    public function getButtonData()
+    {
+        if ($this->registry->registry('post_id') > 0) {
+            $data = [
+                'label' => __('Delete'),
+                'class' => 'delete',
+                'id' => 'edit-delete-button',
+                'data_attribute' => [
+                    'url' => $this->getDeleteUrl(),
+                ],
+                'on_click' =>
+                'deleteConfirm(\'' . __("Are you sure you want to do this?") . '\', \'' . $this->getDeleteUrl() . '\')',
+                'sort_order' => 20,
+            ];
+            return $data;
+        }
+    }
+
+    public function getDeleteUrl()
+    {
+        return $this->urlBuilder->getUrl('*/*/delete', ['post_id' => $this->registry->registry('post_id')]);
+    }
+}
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+3. ResetButton.php
+app\Mageplaza\HelloWorld\Block\Adminhtml\Post\Edit\ResetButton.php
+
+<?php
+namespace Mageplaza\HelloWorld\Block\Adminhtml\Post\Edit;
+
+use Magento\Framework\View\Element\UiComponent\Control\ButtonProviderInterface;
+
+/**
+ * Class ResetButton
+ */
+class ResetButton implements ButtonProviderInterface
+{
+    /**
+     * @return array
+     */
+    public function getButtonData()
+    {
+        return [
+            'label' => __('Reset'),
+            'class' => 'reset',
+            'on_click' => 'location.reload();',
+            'sort_order' => 30
+        ];
+    }
+}
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+4. SaveButton.php
+app\Mageplaza\HelloWorld\Block\Adminhtml\Post\Edit\SaveButton.php
+
+<?php
+namespace Mageplaza\HelloWorld\Block\Adminhtml\Post\Edit;
+
+use Magento\Framework\View\Element\UiComponent\Control\ButtonProviderInterface;
+
+class SaveButton implements ButtonProviderInterface
+{
+	public function getButtonData()
+	{
+		$data = [
+			'label' => __('Save'),
+			'class' => 'save primary',
+			'data_attribute' => [
+				'mage-init' => ['button' => ['event' => 'save']],
+				'form-role' => 'save',
+			],
+			'sort_order' => 60,
+		];
+		return $data;
+	}
+}
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+5. SaveAndContinueButton.php
+app\Mageplaza\HelloWorld\Block\Adminhtml\Post\Edit\SaveAndContinueButton.php
+
+<?php
+namespace Mageplaza\HelloWorld\Block\Adminhtml\Post\Edit;
+
+use Magento\Framework\View\Element\UiComponent\Control\ButtonProviderInterface;
+
+class SaveAndContinueButton implements ButtonProviderInterface
+{
+	public function getButtonData()
+	{
+		$data = [
+			'label' => __('Save and Continue Edit'),
+			'class' => 'save',
+			'data_attribute' => [
+				'mage-init' => [
+					'button' => ['event' => 'saveAndContinueEdit'],
+				],
+			],
+			'sort_order' => 50,
+		];
+		return $data;
+	}
+}
+
+=============================
+II. Create View
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+1. Create layout
+app\view\adminhtml\layout\mageplaza_helloworld_post_edit.xml
+
+<?xml version="1.0"?>
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <update handle="styles"/>
+    <update handle="editor"/>
+    <body>
+        <referenceContainer name="content">
+            <uiComponent name="mageplaza_helloworld_post_form"/>
+        </referenceContainer>
+    </body>
+</page>
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+2. Create template
+app\view\adminhtml\ui_component\mageplaza_helloworld_post_form.xml
+
+<?xml version="1.0"?>
+<form xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Ui:etc/ui_configuration.xsd">
+    <argument name="data" xsi:type="array">
+        <item name="js_config" xsi:type="array">
+            <item name="provider" xsi:type="string">mageplaza_helloworld_post_form.posts_form_data_source</item>
+            <item name="deps" xsi:type="string">mageplaza_helloworld_post_form.posts_form_data_source</item>
+        </item>
+        <item name="config" xsi:type="array">
+            <item name="dataScope" xsi:type="string">data</item>
+        </item>
+        <item name="template" xsi:type="string">templates/form/collapsible</item>
+        <item name="label" xsi:type="string" translate="true">Post New</item>
+        <!-- Link direct -->
+        <item name="buttons" xsi:type="array">
+            <item name="back" xsi:type="string">Mageplaza\HelloWorld\Block\Adminhtml\Post\Edit\BackButton</item>
+            <item name="reset" xsi:type="string">Mageplaza\HelloWorld\Block\Adminhtml\Post\Edit\ResetButton</item>
+            <item name="delete" xsi:type="string">Mageplaza\HelloWorld\Block\Adminhtml\Post\Edit\DeleteButton</item>
+            <item name="save" xsi:type="string">Mageplaza\HelloWorld\Block\Adminhtml\Post\Edit\SaveButton</item>
+            <item name="save_and_continue" xsi:type="string">Mageplaza\HelloWorld\Block\Adminhtml\Post\Edit\SaveAndContinueButton</item>
+        </item>
+    </argument>
+    <dataSource name="posts_form_data_source">
+        <argument name="dataProvider" xsi:type="configurableObject">
+            <argument name="class" xsi:type="string">Mageplaza\HelloWorld\Ui\Component\Form\Post\DataProvider</argument>
+            <argument name="name" xsi:type="string">posts_form_data_source</argument>
+            <argument name="primaryFieldName" xsi:type="string">post_id</argument>
+            <argument name="requestFieldName" xsi:type="string">post_id</argument>
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="submit_url" xsi:type="url" path="*/*/save"/>
+                </item>
+            </argument>
+        </argument>
+        <argument name="data" xsi:type="array">
+            <item name="js_config" xsi:type="array">
+                <item name="component" xsi:type="string">Magento_Ui/js/form/provider</item>
+            </item>
+        </argument>
+    </dataSource>
+    <fieldset name="main_fieldset">
+        <argument name="data" xsi:type="array">
+            <item name="config" xsi:type="array">
+                <item name="label" xsi:type="string" translate="true">Post New</item>
+            </item>
+        </argument>
+        <field name="name">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="dataType" xsi:type="string">text</item>
+                    <item name="label" xsi:type="string" translate="true">Name</item>
+                    <item name="formElement" xsi:type="string">input</item>
+                    <item name="source" xsi:type="string">post</item>
+                    <item name="dataScope" xsi:type="string">name</item>
+                </item>
+            </argument>
+        </field>
+
+        <field name="url_key">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="dataType" xsi:type="string">text</item>
+                    <item name="label" xsi:type="string" translate="true">Url key</item>
+                    <item name="formElement" xsi:type="string">input</item>
+                    <item name="source" xsi:type="string">post</item>
+                    <item name="dataScope" xsi:type="string">url_key</item>
+                </item>
+            </argument>
+        </field>
+
+
+        <field name="post_content">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="formElement" xsi:type="string">textarea</item>
+                    <item name="cols" xsi:type="number">15</item>
+                    <item name="rows" xsi:type="number">5</item>
+                    <item name="label" translate="true" xsi:type="string">Content</item>
+                    <item name="dataType" translate="true" xsi:type="string">text</item>
+                    <item name="source" xsi:type="string">post</item>
+                    <item name="dataScope" xsi:type="string">post_content</item>
+                </item>
+            </argument>
+        </field>
+
+        <field name="tags">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="dataType" xsi:type="string">text</item>
+                    <item name="label" xsi:type="string" translate="true">Tags</item>
+                    <item name="formElement" xsi:type="string">input</item>
+                    <item name="source" xsi:type="string">post</item>
+                    <item name="dataScope" xsi:type="string">tags</item>
+                </item>
+            </argument>
+        </field>
+
+
+        <field name="status" formElement="select">
+            <settings>
+                <dataType>text</dataType>
+                <label translate="true">Status</label>
+                <source>post</source>
+                <dataScope>status</dataScope>
+            </settings>
+            <formElements>
+                <select>
+                    <settings>
+                        <options>
+                            <option name="Enable" xsi:type="array">
+                                <item name="value" xsi:type="string">1</item>
+                                <item name="label" xsi:type="string">Enable</item>
+                            </option>
+                            <option name="Disable" xsi:type="array">
+                                <item name="value" xsi:type="string">0</item>
+                                <item name="label" xsi:type="string">Disable</item>
+                            </option>
+                        </options>
+                        <caption translate="true">-- Please Select --</caption>
+                    </settings>
+                </select>
+            </formElements>
+        </field>
+        <!-- Add more field here -->
+    </fieldset>
+</form>
+
+* Note: file app\etc\di.xml
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../../../lib/internal/Magento/Framework/ObjectManager/etc/config.xsd">
+    <type name="Magento\Framework\View\Element\UiComponent\DataProvider\CollectionFactory">
+        <arguments>
+            <argument name="collections" xsi:type="array">
+                <item name="post_listing_data_source" xsi:type="string">Mageplaza\HelloWorld\Model\ResourceModel\Post\Grid\Collection</item>
+            </argument>
+            <argument name="collections" xsi:type="array">
+                <item name="posts_form_data_source" xsi:type="string">Mageplaza\HelloWorld\Model\ResourceModel\Post\Grid\Collection</item>
+            </argument>
+        </arguments>
+    </type>
+    <virtualType name="Mageplaza\HelloWorld\Model\ResourceModel\Post\Grid\Collection" type="Magento\Framework\View\Element\UiComponent\DataProvider\SearchResult">
+        <arguments>
+            <argument name="mainTable" xsi:type="string">mageplaza_helloworld_post</argument>
+            <argument name="resourceModel" xsi:type="string">Mageplaza\HelloWorld\Model\ResourceModel\Post</argument>
+        </arguments>
+    </virtualType>
+
+</config>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

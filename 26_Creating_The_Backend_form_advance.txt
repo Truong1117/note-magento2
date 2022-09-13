@@ -1,0 +1,73 @@
+***
+	Column join two table get select
+***
+    <field name="tag_id">
+            <argument name="data" xsi:type="array">
+            <item name="options" xsi:type="object">Mageplaza\HelloWorld\Model\Tag\AttributeSet\Options</item>
+                <item name="config" xsi:type="array">
+                    <item name="dataType" xsi:type="string">text</item>
+                    <item name="label" xsi:type="string" translate="true">Tag Name</item>
+                    <item name="formElement" xsi:type="string">select</item>
+                    <item name="source" xsi:type="string">post</item>
+                    <item name="dataScope" xsi:type="string">tag_id</item>
+                </item>
+            </argument>
+        </field>
+
+
+~~~~~~~~~~~~~~~~~~~~~~~
+In file app\Mageplaza\HelloWorld\Model\Tag\AttributeSet\Options.php
+
+<?php
+
+/**
+ * Copyright © Magento, Inc. All rights reserved.
+ * See COPYING.txt for license details.
+ */
+
+namespace Mageplaza\HelloWorld\Model\Tag\AttributeSet;
+
+/**
+ * Attribute Set Options
+ */
+class Options implements \Magento\Framework\Data\OptionSourceInterface
+{
+    /**
+     * @var \WDT\Faq\Model\ResourceModel\Category\CollectionFactory
+     */
+    protected $_collectionFactory;
+
+    /**
+     * @var array|null
+     */
+    protected $_options;
+
+    /**
+     * @param \WDT\Faq\Model\ResourceModel\Category\CollectionFactory $collectionFactory
+     */
+    public function __construct(
+        \Mageplaza\HelloWorld\Model\ResourceModel\Tag\CollectionFactory $collectionFactory
+    ) {
+        $this->_collectionFactory = $collectionFactory;
+    }
+
+    /**
+     * @return array
+     */
+    public function toOptionArray() {
+        if ($this->_options === null) {
+            $collection = $this->_collectionFactory->create();
+
+            $this->_options = [['label' => '', 'value' => '']];
+
+            foreach ($collection as $tag) {
+                $this->_options[] = [
+                    'label' => $tag->getTagName(),
+                    'value' => $tag->getTagId()
+                ];
+            }
+        }
+
+        return $this->_options;
+    }
+}

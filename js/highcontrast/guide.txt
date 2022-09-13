@@ -1,0 +1,1 @@
+https://stackoverflow.com/questions/15066265/set-body-class-with-jquery-cookie-plugin

@@ -1,0 +1,687 @@
+***
+	Create a block form in magento 2
+***
+
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+1. Create menu
+app\Mageplaza\HelloWorld\etc\menu.xml
+ <add id="Mageplaza_HelloWorld::tag_block" title="Manage Posts Tags" module="Mageplaza_HelloWorld" sortOrder="17" action="mageplaza_helloworld/tagblock/index" resource="Mageplaza_HelloWorld::tag_block" parent="Mageplaza_HelloWorld::grid_block"/>
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+2. Create controller:
+app\Mageplaza\HelloWorld\Controller\Adminhtml\PostBlock\Index.php
+
+<?php
+
+namespace Mageplaza\HelloWorld\Controller\Adminhtml\PostBlock;
+
+use Magento\Backend\App\Action;
+class Index extends Action
+{
+	protected $resultPageFactory = false;
+
+	public function __construct(
+		\Magento\Backend\App\Action\Context $context,
+		\Magento\Framework\View\Result\PageFactory $resultPageFactory
+	)
+	{
+		parent::__construct($context);
+		$this->resultPageFactory = $resultPageFactory;
+	}
+
+	protected function _isAllowed()
+	{
+		return $this->_authorization->isAllowed('Mageplaza_HelloWorld::index');
+	}
+
+	public function execute()
+	{
+		$resultPage = $this->resultPageFactory->create();
+		$resultPage->getConfig()->getTitle()->prepend((__('Posts')));
+		return $resultPage;
+	}
+}
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+3. Create layout
+app\Mageplaza\HelloWorld\view\adminhtml\layout\mageplaza_helloworld_postblock_index.xml
+<?xml version="1.0"?>
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../../../../../lib/internal/Magento/Framework/View/Layout/etc/page_configuration.xsd">
+    <update handle="styles"/>
+    <body>
+        <referenceContainer name="content">
+            <uiComponent name="mageplaza_helloworld_postblock_listing"/>
+        </referenceContainer>
+    </body>
+</page>
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+3. Create ui_component
+app\Mageplaza\HelloWorld\view\adminhtml\ui_component\mageplaza_helloworld_postblock_listing.xml
+
+<?xml version="1.0" encoding="UTF-8"?>
+<listing xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Ui:etc/ui_configuration.xsd">
+    <argument name="data" xsi:type="array">
+        <item name="js_config" xsi:type="array">
+            <item name="provider" xsi:type="string">mageplaza_helloworld_postblock_listing.postblock_listing_data_source</item>
+            <item name="deps" xsi:type="string">mageplaza_helloworld_postblock_listing.postblock_listing_data_source</item>
+        </item>
+        <item name="spinner" xsi:type="string">helloworld_post_columns</item>
+        <item name="buttons" xsi:type="array">
+            <item name="add" xsi:type="array">
+                <item name="name" xsi:type="string">add</item>
+                <item name="label" xsi:type="string" translate="true">Add New Post</item>
+                <item name="class" xsi:type="string">primary</item>
+                <item name="url" xsi:type="string">*/*/create</item>
+            </item>
+        </item>
+    </argument>
+    <dataSource name="postblock_listing_data_source">
+        <argument name="dataProvider" xsi:type="configurableObject">
+            <argument name="class" xsi:type="string">Magento\Framework\View\Element\UiComponent\DataProvider\DataProvider</argument>
+            <!-- <argument name="class" xsi:type="string">Mageplaza\HelloWorld\Ui\Component\Form\Post\DataProvider</argument> -->
+            <argument name="name" xsi:type="string">postblock_listing_data_source</argument>
+            <argument name="primaryFieldName" xsi:type="string">post_id</argument>
+            <argument name="requestFieldName" xsi:type="string">post_id</argument>
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="component" xsi:type="string">Magento_Ui/js/grid/provider</item>
+                    <item name="update_url" xsi:type="url" path="mui/index/render"/>
+                    <item name="storageConfig" xsi:type="array">
+                        <item name="indexField" xsi:type="string">post_id</item>
+                    </item>
+                </item>
+            </argument>
+        </argument>
+        <argument name="data" xsi:type="array">
+            <item name="js_config" xsi:type="array">
+                <item name="component" xsi:type="string">Magento_Ui/js/grid/provider</item>
+            </item>
+        </argument>
+    </dataSource>
+    <!-- Listing toolbar -->
+    <listingToolbar name="listing_top">
+        <argument name="data" xsi:type="array">
+            <item name="config" xsi:type="array">
+                <item name="sticky" xsi:type="boolean">true</item>
+            </item>
+        </argument>
+        <bookmark name="bookmarks"/>
+        <columnsControls name="columns_controls"/>
+        <filterSearch name="fulltext"/>
+        <filters name="listing_filters" />
+        <massaction name="listing_massaction">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="component" xsi:type="string">Magento_Ui/js/grid/tree-massactions</item>
+                </item>
+            </argument>
+            <action name="delete">
+                <argument name="data" xsi:type="array">
+                    <item name="config" xsi:type="array">
+                        <item name="type" xsi:type="string">delete</item>
+                        <item name="label" xsi:type="string" translate="true">Delete</item>
+                        <item name="url" xsi:type="url" path="mageplaza_helloworld/post/massDelete"/>
+                        <item name="confirm" xsi:type="array">
+                            <item name="title" xsi:type="string" translate="true">Delete Post</item>
+                            <item name="message" xsi:type="string" translate="true">Are you sure you wan't to delete selected items?</item>
+                        </item>
+                    </item>
+                </argument>
+            </action>
+        </massaction>
+        <paging name="listing_paging"/>
+        <exportButton name="export_button"/>
+    </listingToolbar>
+
+    <columns name="helloworld_post_columns">
+        <column sortOrder="10" name="post_id">
+            <settings>
+                <filter>text</filter>
+                <label translate="true">ID</label>
+                <sorting>desc</sorting>
+            </settings>
+        </column>
+        <column name="name" sortOrder="13">
+            <settings>
+                <filter>text</filter>
+                <label translate="true">Post name</label>
+            </settings>
+        </column>
+
+        <column sortOrder="14" name="post_content">
+            <settings>
+                <filter>text</filter>
+                <label translate="true">Post Content</label>>
+            </settings>
+        </column>
+
+        <!-- Image Column -->
+        <column name="image" sortOrder="17" class="Mageplaza\HelloWorld\Ui\Component\Listing\Columns\Thumbnail">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="component" xsi:type="string">Magento_Ui/js/grid/columns/thumbnail</item>
+                    <item name="sortable" xsi:type="boolean">false</item>
+                    <item name="altField" xsi:type="string">title</item>
+                    <item name="has_preview" xsi:type="string">1</item>
+                    <item name="label" xsi:type="string" translate="true">Thumbnail</item>
+                </item>
+            </argument>
+        </column>
+
+        <column name="tag_name" sortOrder="15">
+            <settings>
+                <filter>text</filter>
+                <label translate="true">Post Tags</label>
+            </settings>
+        </column>
+
+        <column name="status">
+            <argument name="data" xsi:type="array">
+                <item name="options" xsi:type="object">Mageplaza\HelloWorld\Ui\Component\Listing\Columns\Status</item>
+                <item name="config" xsi:type="array">
+                    <item name="sortOrder" xsi:type="number">60</item>
+                    <item name="filter" xsi:type="string">select</item>
+                    <item name="label" translate="true" xsi:type="string">Status</item>
+                    <item name="component" xsi:type="string">Magento_Ui/js/grid/columns/select</item>
+                    <item name="dataType" xsi:type="string">select</item>
+                    <item name="editor" xsi:type="array">
+                        <item name="editorType" xsi:type="string">select</item>
+                    </item>
+                </item>
+            </argument>
+        </column>
+
+        <column name="created_at" sortOrder="19" class="Magento\Ui\Component\Listing\Columns\Date" component="Magento_Ui/js/grid/columns/date">
+            <settings>
+                <filter>dateRange</filter>
+                <dataType>date</dataType>
+                <label translate="true">Created</label>
+            </settings>
+        </column>
+        <column name="updated_at" sortOrder="20" class="Magento\Ui\Component\Listing\Columns\Date" component="Magento_Ui/js/grid/columns/date">
+            <settings>
+                <filter>dateRange</filter>
+                <dataType>date</dataType>
+                <label translate="true">Modified</label>
+            </settings>
+        </column>
+
+        <settings>
+            <editorConfig>
+                <param name="clientConfig" xsi:type="array">
+                    <item name="saveUrl" xsi:type="url" path="*/*/inlineEdit"/>
+                    <item name="validateBeforeSave" xsi:type="boolean">false</item>
+                </param>
+                <param name="indexField" xsi:type="string">post_id</param>
+                <param name="enabled" xsi:type="boolean">true</param>
+                <param name="selectProvider" xsi:type="string">mageplaza_helloworld_postblock_listing.mageplaza_helloworld_postblock_listing.helloworld_post_columns.ids</param>
+            </editorConfig>
+            <childDefaults>
+                <param name="fieldAction" xsi:type="array">
+                    <item name="provider" xsi:type="string">mageplaza_helloworld_postblock_listing.mageplaza_helloworld_postblock_listing.helloworld_post_columns.ids</item>
+                    <item name="target" xsi:type="string">applyAction</item>
+                    <item name="params" xsi:type="array">
+                        <item name="0" xsi:type="string">edit</item>
+                        <item name="1" xsi:type="string">${ $.$data.rowIndex }</item>
+                    </item>
+                </param>
+            </childDefaults>
+        </settings>
+        <actionsColumn name="ids" class="Mageplaza\HelloWorld\Ui\Component\Listing\Columns\PostBlockActions" sortOrder="40">
+            <settings>
+                <indexField>post_id</indexField>
+            </settings>
+        </actionsColumn>
+    </columns>
+</listing>
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+4. Create Controller Create.php
+app\Mageplaza\HelloWorld\Controller\Adminhtml\PostBlock\Create.php
+<?php
+
+namespace Mageplaza\HelloWorld\Controller\Adminhtml\PostBlock;
+
+use Magento\Backend\App\Action;
+use Magento\Backend\App\Action\Context;
+use Magento\Framework\View\Result\PageFactory;
+use Magento\Framework\Controller\ResultFactory;
+
+class Create extends Action
+{
+     /**
+      * @var \Magento\Framework\View\Result\PageFactory
+      */
+    protected $_resultPageFactory;
+
+	/**
+	 * @var \Magento\Framework\Controller\ResultFactory
+	 */
+	protected $_resultFactory;
+
+    /**
+     * @param Context $context
+     * @param PageFactory $resultPageFactory
+     */
+    public function __construct(
+        Context $context,
+		ResultFactory $resultFactory,
+        PageFactory $resultPageFactory
+    ) {
+        parent::__construct($context);
+        $this->_resultFactory = $resultFactory;
+        $this->_resultPageFactory = $resultPageFactory;
+    }
+
+    public function execute()
+    {
+	    /** @var \Magento\Backend\Model\View\Result\Forward $resultForward */
+	    $resultForward = $this->resultFactory->create(ResultFactory::TYPE_FORWARD);
+	    $resultForward->forward('edit');
+	    return $resultForward;
+    }
+}
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+5. Create Controller Edit.php
+
+<?php
+
+namespace Mageplaza\HelloWorld\Controller\Adminhtml\PostBlock;
+
+use Magento\Backend\App\Action;
+use Magento\Backend\App\Action\Context;
+use Magento\Framework\Controller\ResultFactory;
+use Mageplaza\HelloWorld\Model\PostFactory;
+
+class Edit extends Action
+{
+	/**
+	 * @var \Mageplaza\HelloWorld\Model\PostFactory
+	 */
+
+	protected $_post;
+	/**
+	 * @var \Magento\Framework\Registry
+	 */
+	protected $_registry;
+
+	protected $_session;
+
+	public function __construct(
+		Context $context,
+		\Magento\Framework\Registry $registry,
+		PostFactory $post
+	) {
+		parent::__construct($context);
+
+		$this->_post = $post;
+		$this->_registry = $registry;
+		$this->_session = $context->getSession();
+	}
+
+	public function execute()
+	{
+		$id = $this->getRequest()->getParam('post_id');
+		$model = $this->_post->create();
+
+		if ($id) {
+			$model->load($id);
+		}
+
+		$data = $this->_session->getFormData(true);
+		if (!empty($data)) {
+			$model->setData($data);
+		}
+		$this->_registry->register('postblock_movie', $model);
+
+		$resultPage = $this->resultFactory->create(ResultFactory::TYPE_PAGE);
+		$resultPage->getConfig()->getTitle()->prepend(__('Post block movie'));
+
+		$left = $resultPage->getLayout()->createBlock('Mageplaza\HelloWorld\Block\Adminhtml\PostBlock\Edit\Tabs');
+		$resultPage->addLeft($left);
+
+		$content = $resultPage->getLayout()->createBlock('Mageplaza\HelloWorld\Block\Adminhtml\PostBlock\Edit');
+
+		$resultPage->addContent($content);
+
+		return $resultPage;
+	}
+}
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+6. Create Block 
+
+~~~~
+6.1 app\Mageplaza\HelloWorld\Block\Adminhtml\PostBlock\Edit.php
+<?php
+
+namespace Mageplaza\HelloWorld\Block\Adminhtml\PostBlock;
+
+class Edit extends \Magento\Backend\Block\Widget\Form\Container
+{
+    /**
+     * Core registry
+     *
+     * @var \Magento\Framework\Registry
+     */
+    protected $_coreRegistry = null;
+
+    /**
+     * @param \Magento\Backend\Block\Widget\Context $context
+     * @param array                                 $data
+     */
+    public function __construct(
+        \Magento\Backend\Block\Widget\Context $context,
+        array $data = []
+    ) {
+        parent::__construct($context, $data);
+    }
+
+    protected function _construct()
+    {
+
+        $this->_objectId = 'post_id';
+        $this->_blockGroup = 'Mageplaza_HelloWorld';
+        $this->_controller = 'Adminhtml_PostBlock';
+        parent::_construct();
+        $this->buttonList->update('save', 'label', __('Save'));
+    }
+
+    /**
+     * Check permission for passed action
+     *
+     * @param string $resourceId
+     * @return bool
+     */
+    protected function _isAllowedAction($resourceId)
+    {
+        return $this->_authorization->isAllowed($resourceId);
+    }
+}
+
+~~~~~
+6.2 app\Mageplaza\HelloWorld\Block\Adminhtml\PostBlock\Edit\Form.php
+<?php
+
+namespace Mageplaza\HelloWorld\Block\Adminhtml\PostBlock\Edit;
+
+class Form extends \Magento\Backend\Block\Widget\Form\Generic
+{
+    public function __construct(
+        \Magento\Backend\Block\Template\Context $context,
+        \Magento\Framework\Registry $registry,
+        \Magento\Framework\Data\FormFactory $formFactory,
+        array $data = []
+    ) {
+        parent::__construct($context, $registry, $formFactory, $data);
+    }
+
+    protected function _construct()
+    {
+        parent::_construct();
+        $this->setId('attributeset_category');
+        $this->setTitle(__('Attribute Set Information'));
+    }
+
+    protected function _prepareForm()
+    {
+        $form = $this->_formFactory->create(
+            ['data' =>
+                [
+                    'id' => 'edit_form',
+                    'enctype' => 'multipart/form-data',
+                    'action' => $this->getData('action'),
+                    'method' => 'post'
+                ]
+            ]
+        );
+        $form->setUseContainer(true);
+        $this->setForm($form);
+        return parent::_prepareForm();
+    }
+}
+
+
+
+~~~~~
+6.3 app\Mageplaza\HelloWorld\Block\Adminhtml\PostBlock\Edit\Tabs.php
+<?php
+
+namespace Mageplaza\HelloWorld\Block\Adminhtml\PostBlock\Edit;
+
+class Tabs extends \Magento\Backend\Block\Widget\Tabs
+{
+
+    protected function _construct()
+    {
+        parent::_construct();
+        $this->setId('postBlockMovie_tabs');
+        $this->setDestElementId('edit_form');
+        $this->setTitle(__('Item Information'));
+    }
+
+    protected function _prepareLayout()
+    {
+        $this->addTab(
+            'form_section',
+            [
+                'label' => __('Post Block Movie'),
+                'content' => $this->getLayout()->createBlock(
+                    'Mageplaza\HelloWorld\Block\Adminhtml\PostBlock\Edit\Tab\PostBlock'
+                )->toHtml().$this->getLayout()->createBlock(
+		                'Mageplaza\HelloWorld\Block\Adminhtml\PostBlock\Edit\Tab\Movie'
+	                )->toHtml(),
+            ]
+        );
+        return parent::_prepareLayout();
+    }
+}
+
+~~~~~~~~
+6.4 app\Mageplaza\HelloWorld\Block\Adminhtml\PostBlock\Edit\Tab\PostBlock.php
+<?php
+
+namespace Mageplaza\HelloWorld\Block\Adminhtml\PostBlock\Edit\Tab;
+class PostBlock extends \Magento\Backend\Block\Widget\Form\Generic implements
+	\Magento\Backend\Block\Widget\Tab\TabInterface {
+
+	/**
+	 * @var \Magento\Store\Model\System\Store
+	 */
+	protected $_systemStore;
+
+	/**
+	 * @var \Mageplaza\HelloWorld\Model\Tag\AttributeSet\Options
+	 */
+	protected $_tag;
+
+	/**
+	 * @var \Magento\Catalog\Model\Product\AttributeSet\Options
+	 */
+	protected $_attributeSetOptions;
+
+	public function __construct(
+		\Mageplaza\HelloWorld\Model\Tag\AttributeSet\Options $tag,
+		\Magento\Backend\Block\Template\Context $context,
+		\Magento\Framework\Registry $registry,
+		\Magento\Framework\Data\FormFactory $formFactory,
+		\Magento\Store\Model\System\Store $systemStore,
+		\Magento\Catalog\Model\Product\AttributeSet\Options $attributeSetOptions,
+		array $data = []
+	) {
+		$this->_tag = $tag;
+		$this->_systemStore = $systemStore;
+		$this->_attributeSetOptions = $attributeSetOptions;
+		parent::__construct($context, $registry, $formFactory, $data);
+	}
+
+	protected function _prepareForm() {
+		$model = $this->_coreRegistry->registry('postblock_movie');
+		$form = $this->_formFactory->create();
+		$form->setHtmlIdPrefix('postblock_movie_');
+		$fieldset = $form->addFieldset(
+			'base_fieldset',
+			['legend' => __('Post Block'), 'class' => 'fieldset-wide']
+		);
+		$fieldset->addType('image', '\Mageplaza\HelloWorld\Block\Adminhtml\PostBlock\Helper\Image');
+
+		if ($model->getId()) {
+			$fieldset->addField('post_id', 'hidden', ['name' => 'post_id']);
+		}
+
+		$fieldset->addField(
+            'name',
+            'text',
+            array(
+                'label'     => __('Name'),
+                'class'     => 'required-entry',
+                'required'  => true,
+				'name'      => 'name',
+				'values' => $this->_attributeSetOptions->toOptionArray()
+            )
+		);
+		
+		$fieldset->addField(
+            'url_key',
+            'text',
+            array(
+                'label'     => __('Url key'),
+                'class'     => 'required-entry',
+                'required'  => true,
+				'name'      => 'url_key',
+				'values' => $this->_attributeSetOptions->toOptionArray()
+            )
+		);
+
+		$fieldset->addField(
+            'post_content',
+            'textarea',
+            array(
+                'label'     => __('Content'),
+                'class'     => 'required-entry',
+                'required'  => true,
+				'name'      => 'post_content',
+				'values' => $this->_attributeSetOptions->toOptionArray()
+            )
+        );
+		
+		$fieldset->addField(
+            'image',
+            'image',
+            array(
+                'label'     => __('Image'),
+                'class'     => '',
+                'required'  => false,
+				'name'      => 'image',
+				'values' => $this->_attributeSetOptions->toOptionArray()
+            )
+		);
+		
+		$fieldset->addField(
+            'tag_id',
+            'select',
+            array(
+                'label'     => __('Type of ticket'),
+                'class'     => 'required-entry',
+                'required'  => true,
+                'name'      => 'tag_id',
+                'type'  => 'option',
+                'values' => $this->_tag->toOptionArray(),
+            )
+		);
+		
+        //  Status
+        $fieldset->addField(
+            'status',
+            'select',
+            array(
+                'label'     => __('Status'),
+                'class'     => 'required-entry',
+                'required'  => true,
+                'name'      => 'status',
+                'type'  => 'option',
+                'options'   => array(
+                    0 => 'Disable',
+                    1 => 'Enable',
+				),	
+            )
+        );
+
+		$form->setValues($model->getData());
+		$this->setForm($form);
+		return parent::_prepareForm();
+	}
+
+	/**
+	 * Check permission for passed action
+	 *
+	 * @param string $resourceId
+	 * @return bool
+	 */
+	protected function _isAllowedAction($resourceId) {
+		return $this->_authorization->isAllowed($resourceId);
+	}
+
+	/**
+	 * Prepare label for tab
+	 *
+	 * @return \Magento\Framework\Phrase
+	 */
+	public function getTabLabel() {
+		return __('Post Block');
+	}
+
+	/**
+	 * Prepare title for tab
+	 *
+	 * @return \Magento\Framework\Phrase
+	 */
+	public function getTabTitle() {
+		return __('Post Block');
+	}
+
+	/**
+	 * {@inheritdoc}
+	 */
+	public function canShowTab() {
+		return true;
+	}
+
+	/**
+	 * {@inheritdoc}
+	 */
+	public function isHidden() {
+		return false;
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

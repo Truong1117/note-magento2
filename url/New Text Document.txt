@@ -1,0 +1,8 @@
+<?php
+$objectManager =  \Magento\Framework\App\ObjectManager::getInstance();
+$customerSession = $objectManager->get('Magento\Customer\Model\Session');
+$emailCustomer = $customerSession->getCustomer()->getEmail();
+$nameCustomer = $customerSession->getCustomer()->getName();
+$storeManager = $objectManager->get('\Magento\Store\Model\StoreManagerInterface');
+$url = $storeManager->getStore()->getBaseUrl().'useraccount/contact/question';
+?>

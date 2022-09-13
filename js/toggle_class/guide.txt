@@ -1,0 +1,10 @@
+   $j(this).closest('.accordion-item').toggleClass('is-active').siblings().removeClass('is-active');
+~~~~~~~~~~~~~~~~~~
+$(document).ready(function(){
+    $('#radio1').click(function(){
+        $('.what1').addClass('active1').siblings().removeClass('active');       
+    });
+    $('#radio2').click(function(){
+        $('.what2').addClass('active').siblings().removeClass('active1');       
+    });
+});

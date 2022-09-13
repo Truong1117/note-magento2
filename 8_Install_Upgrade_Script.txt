@@ -1,0 +1,288 @@
+***
+Create Setup, Upgrade, Uninstall Script
+***
+Table of content
+	~ InstallSchema / InstallData
+	~ UpgradeSchema / UpgradeData
+	~ Upgrade Schema
+	~ Upgrade Data
+	~ Recurring
+	~ Uninstall
+~~~~~~~~~~~~~~~~~~~
+1. Overview of Install, Upgrade, Uninstall SQL Script
+
+	~ InstallSchema - this class will run when the module is installed to setup the database structure
+	~ InstallData - this class will run when the module is installed to initial the data for database table..
+	~ UpgradeSchema - this class will run when the module is upgraded to setup the database structure
+	~ UpgradeData - this class will run when the module is upgraded to add/remove data from table.
+	~ Recurring
+	~ Uninstall
+
+All of the class will be located at app/code/Vendor/Module/Setup folder.
+
+The module install/upgrade script will run when you run the following command line:
+php bin/magento setup:upgrade
+
+~~~~~~~~~~~~~~~~~~~
+2. Install Script: InstallSchema & InstallData
+
+The InstallSchema and InstallData classes will be run during the module install.
+The InstallSchema setup script in magento 2 will be use to change the database schema (create or change database table). This’s the setup script to create the mageplaza_helloworld_post table:
+File: app/code/Mageplaza/HelloWorld/Setup/InstallSchema.php
+<?php
+
+namespace Mageplaza\HelloWorld\Setup;
+
+class InstallSchema implements \Magento\Framework\Setup\InstallSchemaInterface
+{
+
+	public function install(\Magento\Framework\Setup\SchemaSetupInterface $setup, \Magento\Framework\Setup\ModuleContextInterface $context)
+	{
+		$installer = $setup;
+		$installer->startSetup();
+		if (!$installer->tableExists('mageplaza_helloworld_post')) {
+			$table = $installer->getConnection()->newTable(
+				$installer->getTable('mageplaza_helloworld_post')
+			)
+				->addColumn(
+					'post_id',
+					\Magento\Framework\DB\Ddl\Table::TYPE_INTEGER,
+					null,
+					[
+						'identity' => true,
+						'nullable' => false,
+						'primary'  => true,
+						'unsigned' => true,
+					],
+					'Post ID'
+				)
+				->addColumn(
+					'name',
+					\Magento\Framework\DB\Ddl\Table::TYPE_TEXT,
+					255,
+					['nullable => false'],
+					'Post Name'
+				)
+				->addColumn(
+					'url_key',
+					\Magento\Framework\DB\Ddl\Table::TYPE_TEXT,
+					255,
+					[],
+					'Post URL Key'
+				)
+				->addColumn(
+					'post_content',
+					\Magento\Framework\DB\Ddl\Table::TYPE_TEXT,
+					'64k',
+					[],
+					'Post Post Content'
+				)
+				->addColumn(
+					'tags',
+					\Magento\Framework\DB\Ddl\Table::TYPE_TEXT,
+					255,
+					[],
+					'Post Tags'
+				)
+				->addColumn(
+					'status',
+					\Magento\Framework\DB\Ddl\Table::TYPE_INTEGER,
+					1,
+					[],
+					'Post Status'
+				)
+				->addColumn(
+					'featured_image',
+					\Magento\Framework\DB\Ddl\Table::TYPE_TEXT,
+					255,
+					[],
+					'Post Featured Image'
+				)
+				->addColumn(
+					'created_at',
+					\Magento\Framework\DB\Ddl\Table::TYPE_TIMESTAMP,
+					null,
+					['nullable' => false, 'default' => \Magento\Framework\DB\Ddl\Table::TIMESTAMP_INIT],
+					'Created At'
+				)->addColumn(
+					'updated_at',
+					\Magento\Framework\DB\Ddl\Table::TYPE_TIMESTAMP,
+					null,
+					['nullable' => false, 'default' => \Magento\Framework\DB\Ddl\Table::TIMESTAMP_INIT_UPDATE],
+					'Updated At')
+				->setComment('Post Table');
+			$installer->getConnection()->createTable($table);
+
+			$installer->getConnection()->addIndex(
+				$installer->getTable('mageplaza_helloworld_post'),
+				$setup->getIdxName(
+					$installer->getTable('mageplaza_helloworld_post'),
+					['name', 'url_key', 'post_content', 'tags', 'featured_image'],
+					\Magento\Framework\DB\Adapter\AdapterInterface::INDEX_TYPE_FULLTEXT
+				),
+				['name', 'url_key', 'post_content', 'tags', 'featured_image'],
+				\Magento\Framework\DB\Adapter\AdapterInterface::INDEX_TYPE_FULLTEXT
+			);
+		}
+		$installer->endSetup();
+	}
+}
+
+Note:
+~ The class must extend \Magento\Framework\Setup\InstallSchemaInterface
+
+~ The class must have install() method with 2 arguments SchemaSetupInterface and ModuleContextInterface. 
+
+~ The SchemaSetupInterface is the setup object which provide many function to interact with database server.
+
+~ The ModuleContextInterface has only 1 method getVersion() which will return the current version of your module.
+
+~ In the example above, we create a table named mageplaza_helloworld_post with columns: post_id, name, post_content, created_at ....
+
+~ InstallData will be run after the InstallSchema class to add data to the database table.
+
+File: app/code/Mageplaza/HelloWorld/Setup/InstallData.php
+<?php
+namespace Mageplaza\HelloWorld\Setup;
+
+use Magento\Framework\Setup\InstallDataInterface;
+use Magento\Framework\Setup\ModuleContextInterface;
+use Magento\Framework\Setup\ModuleDataSetupInterface;
+
+class InstallData implements InstallDataInterface
+{
+	protected $_postFactory;
+
+	public function __construct(\Mageplaza\HelloWorld\Model\PostFactory $postFactory)
+	{
+		$this->_postFactory = $postFactory;
+	}
+
+	public function install(ModuleDataSetupInterface $setup, ModuleContextInterface $context)
+	{
+		$data = [
+			'name'         => "How to Create SQL Setup Script in Magento 2",
+			'post_content' => "In this article, we will find out how to install and upgrade sql script for module in Magento 2. When you install or upgrade a module, you may need to change the database structure or add some new data for current table. To do this, Magento 2 provide you some classes which you can do all of them.",
+			'url_key'      => '/magento-2-module-development/magento-2-how-to-create-sql-setup-script.html',
+			'tags'         => 'magento 2,mageplaza helloworld',
+			'status'       => 1
+		];
+		$post = $this->_postFactory->create();
+		$post->addData($data)->save();
+	}
+}
+
+~~~~~~~~~~~~~~~~~~~
+3. Upgrade Script: UpgradeSchema & UpgradeData
+check setup_version in module.xml atapp/code/Mageplaza/HelloWorld/etc/ and separate the script by each version.
+File: app/code/Mageplaza/HelloWorld/etc/module.xml
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Module/etc/module.xsd">
+    <module name="Mageplaza_HelloWorld" setup_version="1.2.0">
+    </module>
+</config>
+
+Upgrade Schema:
+File: app/code/Mageplaza/HelloWorld/Setup/UpgradeSchema.php
+<?php
+namespace Mageplaza\HelloWorld\Setup;
+
+use Magento\Framework\Setup\UpgradeSchemaInterface;
+use Magento\Framework\Setup\SchemaSetupInterface;
+use Magento\Framework\Setup\ModuleContextInterface;
+
+class UpgradeSchema implements UpgradeSchemaInterface
+{
+	public function upgrade( SchemaSetupInterface $setup, ModuleContextInterface $context ) {
+		$installer = $setup;
+
+		$installer->startSetup();
+
+		if(version_compare($context->getVersion(), '1.2.0', '<')) {
+			$installer->getConnection()->addColumn(
+				$installer->getTable( 'mageplaza_helloworld_post' ),
+				'test',
+				[
+					'type' => \Magento\Framework\DB\Ddl\Table::TYPE_DECIMAL,
+					'nullable' => true,
+					'length' => '12,4',
+					'comment' => 'test',
+					'after' => 'status'
+				]
+			);
+		}
+
+
+
+		$installer->endSetup();
+	}
+}
+
+In this class, we use the upgrade() method which will be run every time the module is upgraded
+
+~~~~~~~~~~~~~~~~~~~~~~~~
+4. Upgrade Data:
+This will same with the UpgradeSchema class
+File: app/code/Mageplaza/HelloWorld/Setup/UpgradeData.php
+<?php
+
+namespace Mageplaza\HelloWorld\Setup;
+
+use Magento\Framework\Setup\UpgradeDataInterface;
+use Magento\Framework\Setup\ModuleDataSetupInterface;
+use Magento\Framework\Setup\ModuleContextInterface;
+
+class UpgradeData implements UpgradeDataInterface
+{
+	protected $_postFactory;
+
+	public function __construct(\Mageplaza\HelloWorld\Model\PostFactory $postFactory)
+	{
+		$this->_postFactory = $postFactory;
+	}
+
+	public function upgrade(ModuleDataSetupInterface $setup, ModuleContextInterface $context)
+	{
+		if (version_compare($context->getVersion(), '1.2.0', '<')) {
+			$data = [
+				'name'         => "Magento 2 Events",
+				'post_content' => "This article will talk about Events List in Magento 2. As you know, Magento 2 is using the events driven architecture which will help too much to extend the Magento functionality. We can understand this event as a kind of flag that rises when a specific situation happens. We will use an example module Mageplaza_HelloWorld to exercise this lesson.",
+				'url_key'      => '/magento-2-module-development/magento-2-events.html',
+				'tags'         => 'magento 2,mageplaza helloworld',
+				'status'       => 1
+			];
+			$post = $this->_postFactory->create();
+			$post->addData($data)->save();
+		}
+	}
+}
+
+~~~~~~~~~~~~~~~~~~~~~
+5. Recurring Script
+The recurring script is a script which will be run after the module setup script every time the command line php bin/magento setup:upgrade run.
+This script will be defined same as InstallSchema class but difference in name of the class. The example for this class you can see in vendor/magento/module-indexer/Setup/Recurring.php
+
+~~~~~~~~~~~~~~~~~~~~~
+6. Uninstall Script
+File: app/code/Mageplaza/HelloWorld/Setup/Uninstall.php
+<?php
+namespace Mageplaza\HelloWorld\Setup;
+
+use Magento\Framework\Setup\UninstallInterface;
+use Magento\Framework\Setup\SchemaSetupInterface;
+use Magento\Framework\Setup\ModuleContextInterface;
+
+class Uninstall implements UninstallInterface
+{
+	public function uninstall(SchemaSetupInterface $setup, ModuleContextInterface $context)
+	{
+		$installer = $setup;
+		$installer->startSetup();
+
+		$installer->getConnection()->dropTable($installer->getTable('mageplaza_helloworld_post'));
+
+		$installer->endSetup();
+	}
+}
+run: bin/magento setup:uninstall
+

@@ -1,0 +1,226 @@
+I. Sticky footer
+
+Một trang web thông thường sẽ trông đẹp và hài hòa khí có đủ cả 3 phần header, content và footer. 
+Tuy nhiên, nếu ở 1 page nào đó của trang web mà nội dung rất ít hoặc không có nội dung thì phần footer 
+sẽ tự động nhảy lên nằm sát với header, điều này sẽ làm người dùng nhìn rất khó chịu. 
+Vì vậy, khái niệm sticky footer có nghĩa là làm cho phần footer của trang web luôn luôn nằm dưới cùng 
+của màn hình hoặc dưới cùng của trang web dù cho phần thân có nội dung hay không.
+
+Html:
+<div class="content">
+  <h1>Sticky Footer with Grid</h1>
+  <p><button id="add">Add Content</button></p>
+</div>
+
+<footer class="footer">
+  Footer
+</footer>
+
+Css:
+html {
+  height: 100%;
+}
+body {
+  min-height: 100%;
+  display: grid;
+  grid-template-rows: 1fr auto;
+}
+.content {
+  padding: 20px;
+}
+.footer {
+  grid-row-start: 2;
+  grid-row-end: 3;
+}
+
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  font: 16px Sans-Serif;
+}
+h1 {
+  margin: 0 0 20px 0;
+}
+p {
+  margin: 0 0 20px 0;
+}
+.footer {
+  background: #42A5F5;
+  color: white;
+  padding: 20px;
+}
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+II. Truncate text
+
+Có những đoạn văn bản trong trang web do số lượng ký tự quá nhiều và viết liền nhau nên không thể tự động 
+xuống dòng được mà bị tràn sang hai bên, dẫn đến vỡ layout trang web. Vì vậy, cần phải ngắt đoạn văn bản 
+đó ở một độ dài cần thiết để ngăn chặn lỗi trên, đó gọi là truncate text HTML. Truncate text có thể có 
+nhiều cách, dùng javascript hoặc dùng bất kỳ ngôn ngữ lập trình nào để tính toán số ký tự, nhưng đơn giản 
+nhất vẫn là dùng CSS. Có 2 dạng truncate truncate multi line và truncate one line
+
+Html:
+<h2>width constrained ellipsis line ending</h2>
+
+<p class="width-ellipsis">Line width ellipsis ending, as good as it gets. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam fringilla tortor id sem laoreet tempor. Etiam ultrices malesuada semper. Ut nec aliquam turpis. Nunc mollis dapibus elit. In mi risus, facilisis eu urna sit amet, congue iaculis est. Phasellus euismod, velit non laoreet dapibus, odio eros rutrum est, sit amet consequat nulla orci a ante. Pellentesque egestas rutrum enim sit amet consequat. Donec tempor lobortis ipsum viverra cursus. 
+Morbi id vestibulum turpis. Ut ut velit non libero porta elementum. Ut ut mollis ipsum, id commodo metus. Donec sed feugiat sem, sit amet egestas libero. Ut sit amet orci luctus, sagittis nulla ac, aliquam enim. Quisque eget sem sit amet ex sodales tincidunt vitae nec quam. Aliquam placerat commodo turpis in feugiat. Vivamus eu facilisis ligula, ac commodo mauris. Proin sed sapien efficitur odio tincidunt aliquam eget in elit. 
+Duis ut blandit enim. Aenean dignissim mi id porta lobortis. Curabitur tortor lacus, congue sed tincidunt non, sollicitudin sed urna. Phasellus dui quam, lobortis eget eleifend nec, volutpat vitae mauris. In consectetur sollicitudin purus. In ac tempus ligula. Duis at imperdiet augue. Fusce pretium pretium mauris id porta. Phasellus fermentum, augue sed pellentesque ornare, libero sapien porttitor diam, eget tempus eros urna at mauris. Vestibulum eros eros, varius vitae posuere sit amet, bibendum quis arcu. Duis vel neque ac ante consequat varius sit amet vel quam. Vivamus porttitor sed lorem vel vehicula. Ut consequat laoreet tellus eu facilisis.
+  <p>
+
+<h2>line constrained ellipsis line ending</h2>
+
+<p class="multi-line-ellipsis">
+  Multi-line ellipsis ending, as good as it gets.  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam fringilla tortor id sem laoreet tempor. Etiam ultrices malesuada semper. Ut nec aliquam turpis. Nunc mollis dapibus elit. In mi risus, facilisis eu urna sit amet, congue iaculis est. Phasellus euismod, velit non laoreet dapibus, odio eros rutrum est, sit amet consequat nulla orci a ante. Pellentesque egestas rutrum enim sit amet consequat. Donec tempor lobortis ipsum viverra cursus. 
+Morbi id vestibulum turpis. Ut ut velit non libero porta elementum. Ut ut mollis ipsum, id commodo metus. Donec sed feugiat sem, sit amet egestas libero. Ut sit amet orci luctus, sagittis nulla ac, aliquam enim. Quisque eget sem sit amet ex sodales tincidunt vitae nec quam. Aliquam placerat commodo turpis in feugiat. Vivamus eu facilisis ligula, ac commodo mauris. Proin sed sapien efficitur odio tincidunt aliquam eget in elit. 
+Duis ut blandit enim. Aenean dignissim mi id porta lobortis. Curabitur tortor lacus, congue sed tincidunt non, sollicitudin sed urna. Phasellus dui quam, lobortis eget eleifend nec, volutpat vitae mauris. In consectetur sollicitudin purus. In ac tempus ligula. Duis at imperdiet augue. Fusce pretium pretium mauris id porta. Phasellus fermentum, augue sed pellentesque ornare, libero sapien porttitor diam, eget tempus eros urna at mauris. Vestibulum eros eros, varius vitae posuere sit amet, bibendum quis arcu. Duis vel neque ac ante consequat varius sit amet vel quam. Vivamus porttitor sed lorem vel vehicula. Ut consequat laoreet tellus eu facilisis.</p>
+
+SCSS:
+$line-width: 500px;
+
+.width-ellipsis {
+  display: inline-block;
+  width: $line-width;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  -o-text-overflow: ellipsis;
+}
+
+$line-height: 1.2;
+$line-count: 3;
+
+.multi-line-ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+  display: -webkit-box;
+  -webkit-line-clamp: $line-count;
+  max-height: calc(#{$line-count} * #{$line-height} * 1em);
+  -webkit-box-orient: vertical;
+  line-height: $line-height;
+  position: relative;
+  
+  &:after {
+    content: "...";
+    text-align: right;
+    bottom: 0;
+    right: 0;
+    width: 5%;
+    display: block;
+    position: absolute;
+    height: calc(#{$line-height} * 1em);
+    background: linear-gradient(
+      to right,
+      rgba(255, 255, 255, 0),
+      rgba(255, 255, 255, 1) 75%
+    );
+
+    @supports (-webkit-line-clamp: $line-count) {
+      display: none !important;
+    }
+  }
+}
+
+~~~~~~~~~~~~~~~~~~~~~~~~
+III.Căn giữa theo chiều dọc cho phần tử
+HTML
+<h1>The align-items Property</h1>
+
+<p>The "align-items: center;" aligns the flex items in the middle of the container:</p>
+
+<div class="flex-container">
+  <div>1</div>
+  <div>2</div>
+  <div>3</div>  
+</div>
+
+CSS:
+.flex-container {
+  display: flex;
+  height: 200px;
+  align-items: center;
+  background-color: DodgerBlue;
+}
+
+.flex-container > div {
+  background-color: #f1f1f1;
+  width: 100px;
+  margin: 10px;
+  text-align: center;
+  line-height: 75px;
+  font-size: 30px;
+}
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+IV. Chia nhiều cột có chiều rộng luôn bằng nhau
+
+HTML: 
+
+<div class="flex-container">
+  <div>1</div>
+  <div>2</div>
+  <div>3</div>  
+  <div>4</div>
+  <div>5</div>
+  <div>6</div>  
+  <div>7</div>
+  <div>8</div>
+  <div>9</div>  
+  <div>10</div>
+  <div>11</div>
+  <div>12</div>
+  <div>13</div>  
+  <div>14</div>
+  <div>15</div>
+  <div>16</div>  
+  <div>17</div>
+  <div>18</div>
+  <div>19</div>  
+  <div>20</div>
+</div>
+
+CSS: 
+
+.flex-container {
+  display: flex;
+  flex-wrap: wrap;
+  align-content: space-between;
+  justify-content: space-between;
+  background-color: DodgerBlue;
+  width: 1000px;
+  margin: 0 auto;
+  padding: 10px
+}
+
+.flex-container > div {
+  background-color: #f1f1f1;
+  width: calc((100% - 20px) / 4);
+  text-align: center;
+  line-height: 75px;
+  font-size: 30px;
+  margin: 20px 0;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

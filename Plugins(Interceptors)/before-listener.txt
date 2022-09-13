@@ -1,0 +1,56 @@
+params:
+- first: class parent
+- next: all params parent has 
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+1. Before Listener
+
+~ Before listeners are used whenever we want to change the arguments of an original method or want to 
+add some behavior before an original method is called.
+
+~ We will use before listeners to change behavior of addProduct method of Magento\Checkout\Model\Cart.
+
+~ This method is called whenever we add product to cart.
+
+~ Original Method is
+public function addProduct($productInfo, $requestInfo = null)
+
+~ To use Plugins first of all we have to define it in di.xml.
+
+    <type name="Magento\Checkout\Model\Cart">
+        <plugin name="Commercers_Ticket_Cart" type="Commercers\Ticket\Plugin\Checkout\Model\Cart" sortOrder="1" />
+    </type>   	
+
+~ Now create file Cart.php in folder ‘Commercers\Ticket\Plugin\Checkout\Model’.
+
+~ Before listener is called by adding prefix ‘before’ to the method name and setting first 
+letter of original method to capital.
+
+~ Now method addProduct will become beforeAddProduct.
+
+<?php
+	
+	namespace Commercers\Ticket\Plugin\Checkout\Model;
+
+	class Cart
+	{
+		public function beforeAddProduct(
+			\Magento\Checkout\Model\Cart $subject,
+			$productInfo,
+			$requestInfo = null
+		) {
+			$requestInfo['qty'] = 10; // increasing quantity to 10
+			return array($productInfo, $requestInfo);
+		}
+	}
+
+
+2. The before listener methods do not need to have a return value.
+
+~ Here we are changing parameters. We set quantity to 10. Now it will always add 10 quantities of the product 
+whenever we add product to cart.
+
+~ So we will use before listener when we want to change parameter of an method.
+
+
+

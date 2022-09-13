@@ -1,0 +1,104 @@
+https://aureatelabs.com/magento-2/add-custom-validation-rule-in-magento-2/
+
+~~~~~~~~~~~~~~~~~~~~~
+Step 1: Create a new js file
+Step 2: Register a new js file
+Step 3: Apply the newly created rule to the form fields
+Step 4: Clear cache and check the form
+
+~~~~~~~~~~~~~~~~~~~~~~
+Step 1: Create a new js file
+
+app/code/<Vendor-name>/<Module-name>/view/frontend/web/js/aureatelabsValidationRule.js.
+
+define([
+    'jquery',
+    'jquery/ui',
+    'jquery/validate',
+    'mage/translate'
+    ], function($){
+        'use strict';
+        return function() {
+            $.validator.addMethod(
+                "aureatelabsvalidationrule",
+                function(value, element) {
+                    //Perform your operation here and return the result true/false.
+                    return true/false;
+                },
+                $.mage.__("Your validation message.")
+            );
+    }
+});
+
+~~~~~~~~~~~~~~~~~~~~
+Step 2: Register a new js file
+
+~ Now you need to register newly created js. First, you need to create a filerequirejs-config.js inside app/code/<VendorName>/<ModuleName>/view/frontend/requirejs-config.js.
+
+~ Add the code given below inside the filerequirejs-config.js.
+
+var config = {
+   map: {
+       "*": {
+           aureatelabsMethod: "<VendorName_ModuleName>/js/aureatelabsValidationRule"
+       }
+   }
+};
+
+
+~ In the above code, you can replace your module and vendor name. You can replace your js file name with aureatelabsValidationRule.
+After that, you need to add the code given below in your phtml file.
+
+<script type="text/x-magento-init">
+   {
+       "*": {
+           "aureatelabsMethod": {}
+       }
+   }
+</script>
+
+~ You can also pass arguments to js file inside x-magento-init.
+
+<script type="text/x-magento-init">
+   {
+       "*": {
+           "aureatelabsMethod": {
+               "param": "paramvalue"
+           }
+       }
+   }
+</script>
+
+~ You can also access these params inside aureatelabsValidationRule.js file using the methods given below.
+
+define([
+   'jquery',
+   'jquery/ui',
+   'jquery/validate',
+   'mage/translate'
+], function($){
+   'use strict';
+   return function(param) {
+       console.log(param);
+       $.validator.addMethod(
+           "aureatelabsvalidationrule",
+           function(value, element) {
+               //Perform your operation here and return the result true/false.
+               return true/false;
+           },
+           $.mage.__("Your validation message.")
+       );
+   }
+});
+~~~~~~~~~~~~~~~~~~
+Step 3: Apply the newly created rule to the form fields
+
+Here aureatelabsvalidationrule is the name of our newly created validation rule.
+data-validate="{required:true, 'aureatelabsvalidationrule':true}"
+
+
+~~~~~~~~~~~~~~~~~~~
+Step 4: Clear cache and check the form
+
+php bin/magento cache:flush
+php bin/magento setup:static-content:deploy

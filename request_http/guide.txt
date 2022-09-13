@@ -1,0 +1,13 @@
+        
+protected $_request;  
+
+ public function __construct(
+        \Magento\Framework\App\Request\Http $request,
+    ) {
+        $this->_request = $request;
+
+    }
+
+public function getFullActionName(){
+        return $this->_request->getFullActionName();
+    }

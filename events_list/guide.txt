@@ -1,0 +1,97 @@
+https://www.mageplaza.com/magento-2-module-development/magento-2-events.html
+
+~~~~~~~~~~~~~~~~~~~~
+https://meetanshi.com/blog/magento-2-events/
+
+~~~~~~~~~~~~~~~~~~~
+1. Create event.xml file:
+
+You can create event.xml file for different areas:
+
+~ Global area: app/code/Simi/HelloWorld/etc/events.xml
+
+~ Frontend area: app/code/Simi/HelloWorld/etc/frontend/events.xml
+
+~ Admin area: app/code/Simi/HelloWorld/etc/adminhtml/events.xml
+
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Event/etc/events.xsd">
+    <event name="my_module_event_before">
+        <observer name="myObserverName" instance="MyCompany\MyModule\Observer\MyObserver" />
+    </event>
+    <event name="my_module_event_after">
+        <observer name="myObserverName" instance="MyCompany\MyModule\Observer\AnotherObserver" />
+    </event>
+</config>
+
+~~~~~~~~~~~~~~~~~~~~~
+2. Create Observer class
+
+To create an observer, you must place your class file under your <module-root>/Observer directory. 
+Your observer class should implement Magento\Framework\Event\ObserverInterface and define its execute function.
+
+Below is an example of the basic observer class structure:
+
+namespace MyCompany\MyModule\Observer;
+
+use Magento\Framework\Event\ObserverInterface;
+
+class MyObserver implements ObserverInterface
+{
+  public function __construct()
+  {
+    // Observer initialization code...
+    // You can use dependency injection to get any class this observer may need.
+  }
+
+  public function execute(\Magento\Framework\Event\Observer $observer)
+  {
+    // Observer execution code...
+  }
+}
+
+~~~~~~~~~~~~~~~~~~~~~
+3. Dispatch event
+
+Events can be dispatched using the Magento\Framework\Event\Manager class. This class can be obtained through dependency injection 
+by defining the dependency in your constructor.
+
+To dispatch an event, call the dispatch function of the event manager class and provide it with the name of the event you want to 
+dispatch along with an array of data you wish to provide to observers.
+
+The following example shows you how to dispatch an event with and without an array of data.
+
+namespace MyCompany\MyModule;
+
+use Magento\Framework\Event\ManagerInterface as EventManager;
+
+class MyClass
+{
+  /**
+   * @var EventManager
+   */
+  private $eventManager;
+
+  public function __construct(EventManager $eventManager)
+  {
+    $this->eventManager = $eventManager;
+  }
+
+  public function something()
+  {
+    $eventData = null;
+    // Code...
+    $this->eventManager->dispatch('my_module_event_before');
+    // More code that sets $eventData...
+    $this->eventManager->dispatch('my_module_event_after', ['myEventData' => $eventData]);
+  }
+}
+
+
+
+
+
+
+
+
+

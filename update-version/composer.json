@@ -1,0 +1,83 @@
+{
+    "name": "thomar/magento2",
+    "description": "ThoMar Magento2 Shop",
+    "type": "project",
+    "version": "2.2.3",
+    "license": [
+        "OSL-3.0",
+        "AFL-3.0"
+    ],
+    "require": {
+        "magento/product-community-edition": "2.3.4",
+        "composer/composer": "@alpha",
+        "splendidinternet/mage2-locale-de-de": "^1.23",
+        "firegento/magesetup2": "dev-develop",
+        "amasty/product-attachment": "^1.2",
+        "amasty/color-swatches-pro": "^2.3.7",
+        "nosto/module-nostotagging": "^2.3",
+        "iways/module-pay-pal-plus": "^1.1",
+        "fooman/googleanalyticsplus-m2": "^3.0",
+        "magepal/magento2-googletagmanager": "^2.2",
+        "setasign/fpdi-tcpdf": "^2.1"
+    },
+    "require-dev": {
+        "friendsofphp/php-cs-fixer": "~2.10.0",
+        "lusitanian/oauth": "~0.8.10",
+        "pdepend/pdepend": "2.5.2",
+        "phpmd/phpmd": "@stable",
+        "phpunit/phpunit": "~6.2.0",
+        "sebastian/phpcpd": "~3.0.0",
+        "squizlabs/php_codesniffer": "3.2.2"
+    },
+    "autoload": {
+        "psr-4": {
+            "Magento\\Framework\\": "lib/internal/Magento/Framework/",
+            "Magento\\Setup\\": "setup/src/Magento/Setup/",
+            "Magento\\": "app/code/Magento/",
+            "Zend\\Mvc\\Controller\\": "setup/src/Zend/Mvc/Controller/"
+        },
+        "psr-0": {
+            "": [
+                "app/code/",
+                "lib",
+                "generated/code"
+            ]
+        },
+        "files": [
+            "app/etc/NonComposerComponentRegistration.php"
+        ],
+        "exclude-from-classmap": [
+            "**/dev/**",
+            "**/update/**",
+            "**/Test/**"
+        ]
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Magento\\Sniffs\\": "dev/tests/static/framework/Magento/Sniffs/",
+            "Magento\\Tools\\": "dev/tools/Magento/Tools/",
+            "Magento\\Tools\\Sanity\\": "dev/build/publication/sanity/Magento/Tools/Sanity/",
+            "Magento\\TestFramework\\Inspection\\": "dev/tests/static/framework/Magento/TestFramework/Inspection/",
+            "Magento\\TestFramework\\Utility\\": "dev/tests/static/framework/Magento/TestFramework/Utility/"
+        }
+    },
+    "minimum-stability": "stable",
+    "repositories": {
+        "0": {
+            "type": "composer",
+            "url": "https://repo.magento.com/"
+        },
+        "geissweb": {
+            "type": "composer",
+            "url": "https://packages.geissweb.de"
+        }
+    },
+    "extra": {
+        "magento-force": "override"
+    },
+    "config": {
+        "preferred-install": "dist",
+        "sort-packages": true
+    },
+    "prefer-stable": true
+}

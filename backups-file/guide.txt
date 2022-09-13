@@ -1,0 +1,29 @@
+I. Backups source: file
+
+tar -zcvf [name-file-sau-khi-duoc-nen] [ten-file-can-nen]
+
+ex: tar -zcvf [fulsol.tar.gz] [public_html]
+
+~~~~~~~~~~~
+II. Backups DB:
+
+mysqldump -u [user-name] -p [name-DB] > [name-file.sql]
+
+ex: mysqldump -u [user-name] -p [name-DB] > [fulsol.sql]
+
+~~~~~~~~~~~
+III. Remove error magento
+
+sed -i 's/DEFINER=[^*]*\*/\*/g' ten_db.sql
+
+~~~~~~~~~~~
+IV. Export DB:
+
+mysql -u [name_user] -p [name_DB] < [name-file.sql]
+
+ex: mysql -u [name_user] -p [name_DB] < [fulsol.sql]
+
+~~~~~~~~~~
+V. Giai nen:
+
+tar -zxvf [name_file]

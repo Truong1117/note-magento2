@@ -1,0 +1,182 @@
+Step 1: Create Controller:
+Step 2: Create layout executes controller:
+Step 3: Create a templates: app\Commercers\KnockOutJs\view\frontend\templates\view.phtml
+Step 4: Create a file js
+Step 5: Create a template html
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Step 1: Create Controller:
+app\Commercers\KnockOutJs\Controller\Index\Index.php
+
+<?php
+namespace Commercers\KnockOutJs\Controller\Index;
+
+class Index extends \Magento\Framework\App\Action\Action
+{
+    public function execute()
+    {
+        $this->_view->loadLayout();
+        $this->_view->renderLayout();
+    }
+}
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Step 2: Create layout executes controller:
+
+app\Commercers\KnockOutJs\view\frontend\layout\knockoutjs_index_index.xml
+
+<?xml version="1.0"?>
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" layout="1column" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <head>
+        <title>Knockout JS</title>
+    </head>
+    <body>
+        <referenceContainer name="content">
+            <block class="Commercers\KnockOutJs\Block\Index" name="knockoutjs" template="Commercers_KnockOutJs::view.phtml" cacheable="false"/>
+        </referenceContainer>
+    </body>
+</page>
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Step 3: Create a templates: 
+app\Commercers\KnockOutJs\view\frontend\templates\view.phtml
+
+<?php
+// $availableTypes = array(
+//     array("type_name"      => "Steve 1",),
+//     array("type_name"      => "Steve 2",),
+//     array("type_name"      => "Steve 3",),
+// );
+// $url = $this->getBaseUrls() . 'knockoutjs/index/save';
+$data = [
+    'typeTicket' => $this->getTypeTicket(),
+    'availableTypes'  => array(
+        array("type_name"      => "Steve 1",),
+        array("type_name"      => "Steve 2",),
+        array("type_name"      => "Steve 3",),
+    ),
+    'urlSave' => $this->getBaseUrls() . 'knockoutjs/index/save',
+    'urlRemove' => $this->getBaseUrls() . 'knockoutjs/index/delete',
+]
+?>
+
+<div class="field" data-bind="scope: 'createType'">
+    <div class="control">
+        <!-- ko template: getTemplate() -->
+        <!-- /ko -->
+    </div>
+</div>
+<script type="text/x-magento-init">
+    {
+        "*": {
+            "Magento_Ui/js/core/app": {
+                "components": {
+                    "createType": {
+                        "component": "Commercers_KnockOutJs/js/knockoutjs",
+                        "template": "Commercers_KnockOutJs/createType",
+                        "data": <?= json_encode($data); ?>
+                    }
+                }
+            }
+        }
+    }
+</script>
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Step 4: Create a file js:
+
+app\Commercers\KnockOutJs\view\frontend\web\js\knockoutjs.js
+
+define([
+    'uiComponent',
+    'jquery',
+    'ko'
+], function (Component, $, ko) {
+    'use strict';
+    return Component.extend({
+        initialize: function () {
+            this._super();
+            this.types = ko.observableArray();
+            this.urlSave = ko.observable(this.data['urlSave']);
+            this.urlRemove = this.data['urlRemove'];
+            this.setNewType(this.data['typeTicket']);
+            console.log(this.data);
+        },
+        setNewType: function (values) {
+            var self = this;
+            var mappedData = $.map(values, function (data) {
+                return new self.NewType(data.type_name, data.type_id);
+            });
+            self.types(mappedData);
+
+            return this;
+        },
+        addType: function () {
+            this.types.push(new this.NewType());
+        },
+        removeType: function (type) {
+            this.types.remove(type);
+            $.ajax({
+                type: "POST",
+                url: this.urlRemove,
+                data: {
+                    type_id: type.type_id,
+                },
+                dataType: "json",
+                success: function (response) {
+                    response.success ? alert("Delete Success") : alert("Delete Error");
+                },
+            });
+        },
+        NewType: function (type_name, type_id) {
+            var self = this;
+            self.type_name = type_name;
+            self.type_id = type_id;
+        }
+    });
+});
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Step 5: Create a template html:
+
+app\Commercers\KnockOutJs\view\frontend\web\template\createType.html
+
+<h2>Create Type Ticket</h2>
+
+<form data-bind="attr: {action : urlSave}" method="post">
+    <table>
+        <thead>
+            <tr>
+                <th>Type Ticket Name</th>
+                <th></th>
+            </tr>
+        </thead>
+        <!-- Todo: Generate table body -->
+        <tbody data-bind="foreach: types">
+            <tr>
+                <td>
+                    <input type="hidden"
+                        data-bind="attr: {name : 'ticket['+$index()+'][type_id]',  value : type_id}" />
+                    <input type="text"
+                        data-bind="attr: {name : 'ticket['+$index()+'][type_name]', value : type_name}" />
+                </td>
+                <td><a href="#" data-bind="click: $parent.removeType.bind($parent)">Remove</a></td>
+            </tr>
+        </tbody>
+    </table>
+    <span>Have <span data-bind='text: types().length'>&nbsp;</span> type ticket select</span><br />
+    <button data-bind="click: addType">Create another type</button>
+    <!-- Method 1 -->
+    <button data-bind="visible: types().length > 0" type="submit">Save</button>
+</form>
+
+
+
+
+
+
+
+
+

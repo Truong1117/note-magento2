@@ -1,0 +1,113 @@
+Step 1: 
+Create app/code/Commercers/BWare/etc/adminhtml/di.xml
+
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+	<virtualType name="Magento\Catalog\Ui\DataProvider\Product\Form\Modifier\Pool">
+        <arguments>
+            <argument name="modifiers" xsi:type="array">
+                <item name="defaultQtyModifier" xsi:type="array">
+                    <item name="class" xsi:type="string">Commercers\BWare\Ui\DataProvider\Product\Form\Modifier\DefaultQtyModifier</item>
+                    <item name="sortOrder" xsi:type="number">989</item>
+                </item>
+            </argument>
+        </arguments>
+    </virtualType>
+</config>
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Step 2:
+Create app/code/Commercers/BWare/Ui/DataProvider/Product/Form/Modifier/DefaultQtyModifier.php
+
+<?php
+namespace Commercers\BWare\Ui\DataProvider\Product\Form\Modifier;
+use Magento\Catalog\Ui\DataProvider\Product\Form\Modifier\AbstractModifier;
+use Magento\Catalog\Model\Locator\LocatorInterface;
+use Magento\Framework\Stdlib\ArrayManager;
+use Magento\Framework\UrlInterface;
+use Magento\Ui\Component\Form\Element\Input;
+use Magento\Ui\Component\Form\Field;
+class DefaultQtyModifier extends AbstractModifier
+{
+    /**
+     * @var ArrayManager
+     */
+    protected $arrayManager;
+    /**
+     * @var array
+     */
+    protected $_meta;
+    /**
+     * @var UrlInterface
+     */
+    protected $_urlBuilder;
+    public function __construct(
+        LocatorInterface $locator,
+        ArrayManager $arrayManager,
+        UrlInterface $urlBuilder
+    ) {
+        $this->locator = $locator;
+        $this->arrayManager   = $arrayManager;
+        $this->_urlBuilder = $urlBuilder;
+    }
+    public function modifyData(array $data)
+    {
+        $model = $this->locator->getProduct();
+        $modelId = $model->getId();
+            if (!isset($data[$modelId][self::DATA_SOURCE_DEFAULT]['quantity_and_stock_status']['qty'])) {
+                $data[$modelId][self::DATA_SOURCE_DEFAULT]['quantity_and_stock_status']['qty'] = 1;
+            }
+        return $data;
+    }
+    public function modifyMeta(array $meta)
+    {
+        $meta = $this->getQtyField($meta);
+        return $meta;
+    }
+    protected function getQtyField(array $meta)
+    {
+        $attributeCode = 'qty';
+        $elementPath = $this->arrayManager->findPath($attributeCode, $meta, null, 'children');
+        $containerPath = $this->arrayManager->findPath('quantity_and_stock_status_qty', $meta, null, 'children');
+        if (!$elementPath) {
+            return $meta;
+        }
+        $meta = $this->arrayManager->merge(
+            $containerPath,
+            $meta,
+            [
+                'arguments' => [
+                    'data' => [
+                        'config' => [
+                            'component' => 'Magento_Ui/js/form/components/group',
+                        ],
+                    ],
+                ],
+                'children'  => [
+                    $attributeCode => [
+                        'arguments' => [
+                            'data' => [
+                                'config' => [
+                                    'component' => 'Magento_InventoryCatalogAdminUi/js/product/form/qty',
+                                    'componentType' => 'field',
+                                    'formElement' => 'input',
+                                    'require'   => '1',
+                                    'additionalClasses'   => 'admin__field admin__field-small _required',
+                                    'config' => [
+                                        'dataScope' => $attributeCode,
+                                        'sortOrder' => 9999,
+                                    ],
+                                    'validation' => [
+                                        'required-entry' => true,
+                                    ]
+                                ],
+                            ],
+                        ]
+                    ]
+                ]
+            ]
+        );
+        return $meta;
+    }
+}
+

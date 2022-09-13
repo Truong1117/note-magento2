@@ -1,0 +1,39 @@
+Get / Update Stock Items in Magento 2
+
+Magento 2 Get Stock Items will introduce the simple way to collect the list of all your items in the inventory 
+when you work with code from Magento 2 backend.
+
+~~~~~~~~~~~~~~~~~
+Overview of getting stock items list in Magento 2
+
+~ Step 1: Collection stock item from Resource Model
+
+~ Step 2: Take Resource Model of StockItem
+
+~ Step 3: Set the select query
+
+~~~~~~~~~~~~~~~~~
+Step 1: Collection stock item from Resource Model
+
+The below code snippet is the required command you need to run:
+
+$resource = $objectManager->create('Magento\CatalogInventory\Model\ResourceModel\Stock\Item');
+	$select = $resource->getConnection()->select()->from($resource->getMainTable());
+	$stockItems = $resource->getConnection()->fetchAll($select);
+	foreach($stockItems as $_item){
+		var_dump($_item->getData());
+	}
+
+~~~~~~~~~~~~~~~~
+Step 2: Take Resource Model of StockItem
+
+By that command, you will take Resource Model of StockItem by using $objectManager
+
+~~~~~~~~~~~~~~~~
+Step 3: Set the select query
+
+~ Set the select query via connection object. Then you will retrieve the data from the database by the 
+command $select query.
+
+~ Three steps are the crucial instructions to get the stock item list in Magento 2. I hope you will 
+manipulate them conveniently on your store.

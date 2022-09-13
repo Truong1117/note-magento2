@@ -1,0 +1,98 @@
+***
+1. Bundle product
+Go to the class Magento\Bundle\Model\Product\Type, there are two functions:
+/**
+* Retrieve Required children ids
+* Return grouped array, ex array(
+*   group => array(ids)
+* )
+*
+* @param int $parentId
+* @param bool $required
+* @return array
+*/
+public function getChildrenIds($parentId, $required = true)
+{
+   return $this->_bundleSelection->getChildrenIds($parentId, $required);
+}
+ 
+/**
+* Retrieve parent ids array by required child
+*
+* @param int|array $childId
+* @return array
+*/
+public function getParentIdsByChild($childId)
+{
+   return $this->_bundleSelection->getParentIdsByChild($childId);
+}
+ 
+Configurable product: You can see the class Magento\ConfigurableProduct\Model\Product\Type\Configurable, it also has two functions:
+ 
+/**
+* Retrieve Required children ids
+* Return grouped array, ex array(
+*   group => array(ids)
+* )
+*
+* @param  array|int $parentId
+* @param  bool $required
+* @return array
+*/
+public function getChildrenIds($parentId, $required = true)
+{
+   return $this->_catalogProductTypeConfigurable->getChildrenIds($parentId, $required);
+}
+ 
+/**
+* Retrieve parent ids array by required child
+*
+* @param  int|array $childId
+* @return array
+*/
+public function getParentIdsByChild($childId)
+{
+   return $this->_catalogProductTypeConfigurable->getParentIdsByChild($childId);
+}
+
+2. Grouped product:
+Go to the class Magento\GroupedProduct\Model\Product\Type\Grouped:
+
+/**
+* Retrieve Required children ids
+* Return grouped array, ex array(
+*   group => array(ids)
+* )
+*
+* @param int $parentId
+* @param bool $required
+* @return array
+*
+* @SuppressWarnings(PHPMD.UnusedFormalParameter)
+*/
+public function getChildrenIds($parentId, $required = true)
+{
+   return $this->productLinks->getChildrenIds(
+       $parentId,
+       \Magento\GroupedProduct\Model\ResourceModel\Product\Link::LINK_TYPE_GROUPED
+   );
+}
+ 
+/**
+* Retrieve parent ids array by requested child
+*
+* @param int|array $childId
+* @return array
+*/
+public function getParentIdsByChild($childId)
+{
+   return $this->productLinks->getParentIdsByChild(
+       $childId,
+       \Magento\GroupedProduct\Model\ResourceModel\Product\Link::LINK_TYPE_GROUPED
+   );
+}
+Two functions you want to refer in the above class are getChildrenIds and getParentIdsByChild. 
+By this way, defining the product type is the prerequisites, so for sure, 
+you can load product and declare the function getTypeInstance as the following:
+$product->getTypeInstance()->getParentIdsByChild($child->getId());
+

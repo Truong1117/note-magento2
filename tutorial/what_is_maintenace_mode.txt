@@ -1,0 +1,9 @@
+bin/magento maintenance:enable --ip=123.123.123.123 --ip=123.123.123.123
+
+bin/magento maintenance:allow-ips 123.123.123.123 125.125.125.125
+
+check: 
+bin/magento maintenance:status
+
+deactivate maintenance mode: 
+bin/magento maintenance:disable

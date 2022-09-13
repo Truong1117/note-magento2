@@ -1,0 +1,217 @@
+ protected $_categoryFactory;
+
+public function __construct(
+    // ...
+    \Magento\Catalog\Model\ResourceModel\Category\CollectionFactory $collecionFactory,
+    ) {
+        // ...
+        $this->_categoryFactory = $collecionFactory;
+}
+
+public function yourFunctionName()
+{
+    $catId = 3; // your category id        
+    $collection = $this->_categoryFactory
+                    ->create()
+                    ->addAttributeToSelect('*')
+                    ->addAttributeToFilter('entity_id',['eq'=>$catId])
+                    ->setPageSize(1);
+
+    $catObj = $collection->getFirstItem();
+    $thumbnail = $catObj->getThumbnail(); // it should return value if attribute name is thumbnail
+    $catData = $catObj->getData(); // dump this line to check all data
+
+    // ...
+}
+~~~~~~~~~~~~~~~~
+1. To get  product collection using a factory method:
+
+protected $productFactory;
+protected $categoryFactory;
+public function __construct(
+     ....
+     \Magento\Catalog\Model\ResourceModel\Product\CollectionFactory $productFactory,
+  \Magento\Catalog\Model\CategoryFactory $categoryFactory
+     ....
+){
+    ....
+    $this->collectionFactory = $productFactory;
+  $this->categoryFactory = $categoryFactory;
+    ....
+}
+
+~~~~~~~~~~~~~~~~~~~~~~~~
+2. Get all products using page size:-
+
+$collection = $this->productFactory->create();
+$collection->setPageSize(3);
+foreach ($collection as $product) {
+    print_r($product->getData());
+}
+
+~~~~~~~~~~~~~~~~~~~~~~~~
+3. Load product collection with all attribute:-
+
+$collection = $this->productFactory->create();
+$collection->addAttributeToSelect('*');
+foreach ($collection as $product) {
+    print_r($product->getData());
+}
+
+~~~~~~~~~~~~~~~~~~~~~~~~
+4. Load product collection with a specific attribute:-
+$collection = $this->productFactory->create();
+$collection->addAttributeToSelect('name');
+$collection->addAttributeToSelect('price');
+foreach ($collection as $product) {
+    print_r($product->getData());
+}
+
+~~~~~~~~~~~~~~~~~~~~~~~~
+5. Load product collection by category:-
+$categoryId = '9';
+$category = $this->categoryFactory->create()->load($categoryId);
+$collection = $this->productFactory->create();
+$collection->addAttributeToSelect('*');
+$collection->addCategoryFilter($category);
+$collection->addAttributeToFilter('visibility', \Magento\Catalog\Model\Product\Visibility::VISIBILITY_BOTH);
+$collection->addAttributeToFilter('status',\Magento\Catalog\Model\Product\Attribute\Source\Status::STATUS_ENABLED);
+foreach ($collection as $product) {
+    print_r($product->getData());
+}
+
+~~~~~~~~~~~~~~~~~~~~~~~~~
+6. Filter Product Collection:
+
+~ Is equal to:-
+
+	$collection = $this->productFactory->create();
+	
+	$collection->addAttributeToFilter('status', array('eq' => 1));
+
+~ Is not equal to:-
+
+	$collection = $this->productFactory->create();
+
+	$collection->addAttributeToFilter('status', array('neq' => 1));
+
+~ Greater than:-
+
+	$collection = $this->productFactory->create();
+
+	$collection->addAttributeToFilter('price', array('gt' => 50));
+
+~ Greater than or Equal To:-
+
+	$collection = $this->productFactoryn->create();
+
+	$collection->addAttributeToFilter('price', array('gteq' => 50));
+
+~ Less than:-
+
+	$collection = $this->productFactory->create();
+
+	$collection->addAttributeToFilter('price', array('lt' => 50));
+
+~ Less than or Equal To:-
+
+	$collection = $this->productFactory->create();
+
+	$collection->addAttributeToFilter('price', array('lteq' => 50));
+
+~  Like:-
+
+	$collection = $this->productFactory->create();
+
+	$collection->addAttributeToFilter('sku', array('like' => '%ABC%'));
+
+~ Not Like:-
+
+	$collection = $this->productFactory->create();
+
+	$collection->addAttributeToFilter('sku', array('nlike' => '%ABC%'));
+
+~  In Array:-
+
+	$collection = $this->productFactory->create();
+
+	$collection->addAttributeToFilter('entity_id', array('in' => array(1,2,3)));
+
+~ Not In Array:-
+
+	$collection = $this->productFactory->create();
+
+	$collection->addAttributeToFilter('entity_id', array('nin' => array(1,2,3)));
+
+~ NULL:-
+
+	$collection = $this->productFactory->create();
+
+	$collection->addAttributeToFilter('description',  array('null' => true));
+
+~ Not NULL:-
+
+	$collection = $this->productFactory->create();
+
+	$collection->addAttributeToFilter('description',  array('notnull' => true));
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Sort Product Collection:-
+
+~ Order by Ascending:-
+
+	$collection = $this->productFactory->create();
+
+	$collection->setOrder('price', 'ASC');
+
+~ Order by Descending:-
+
+	$collection = $this->productFactory->create();
+
+	$collection->setOrder('price', 'DESC');
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+Limit Product Collection:-
+
+~ Limit:-
+
+	$collection = $this->productFactory->create();
+
+	$collection->setPageSize(50)->load();
+
+~ Limit with current page:-
+
+	$collection = $this->productFactory->create();
+
+	$collection->setPageSize(50)->setCurPage(2)->load();
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+Count Collection:-
+
+	$collection = $this->productFactory->create();
+
+	$collection->setPageSize(50)->setCurPage(2)->load();
+
+~ Count:-
+
+	$collection = $this->productFactory->create();
+
+	echo $collection->count();
+
+~ Print Collection Query:-
+
+	$collection = $this->productFactory->create();
+
+	echo $collection->getSelect()->__toString();
+
+
+
+
+
+
+
+
+
+
+
+

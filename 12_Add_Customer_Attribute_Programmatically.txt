@@ -1,0 +1,115 @@
+***
+Overview of Adding Customer Attribute Programmatically
+***
+~ Step 1: Create setup file InstallData.php
+~ Step 2: Define the install() method
+~ Step 3: Create custom attribute
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Step 1: Create setup file InstallData.php
+File: app/code/Mageplaza/HelloWorld/Setup/InstallData.php
+<?php
+namespace Mageplaza\HelloWorld\Setup;
+
+use Magento\Eav\Setup\EavSetup;
+use Magento\Eav\Setup\EavSetupFactory;
+use Magento\Framework\Setup\InstallDataInterface;
+use Magento\Framework\Setup\ModuleContextInterface;
+use Magento\Framework\Setup\ModuleDataSetupInterface;
+
+class InstallData implements InstallDataInterface
+{
+	private $eavSetupFactory;
+
+	public function __construct(EavSetupFactory $eavSetupFactory)
+	{
+		$this->eavSetupFactory = $eavSetupFactory;
+	}
+
+}
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Step 2: Define the install() method
+After that, we have to define the install() method and create eav setup model:
+public function install(ModuleDataSetupInterface $setup, ModuleContextInterface $context)
+	{
+		$eavSetup = $this->eavSetupFactory->create(['setup' => $setup]);
+	}
+	Next, we will use eavSetup object to add attribute:
+public function install(ModuleDataSetupInterface $setup, ModuleContextInterface $context)
+	{
+		$eavSetup = $this->eavSetupFactory->create(['setup' => $setup]);
+		$eavSetup->addAttribute(
+			\Magento\Customer\Model\Customer::ENTITY,
+			'sample_attribute',
+			[
+				'type'         => 'varchar',
+				'label'        => 'Sample Attribute',
+				'input'        => 'text',
+				'required'     => false,
+				'visible'      => true,
+				'user_defined' => true,
+				'position'     => 999,
+				'system'       => 0,
+			]
+		);
+}
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Step 3: Create custom attribute
+
+File: app/code/Mageplaza/HelloWorld/Setup/InstallData.php
+<?php
+
+namespace Mageplaza\HelloWorld\Setup;
+
+use Magento\Eav\Setup\EavSetup;
+use Magento\Eav\Setup\EavSetupFactory;
+use Magento\Framework\Setup\InstallDataInterface;
+use Magento\Framework\Setup\ModuleContextInterface;
+use Magento\Framework\Setup\ModuleDataSetupInterface;
+use Magento\Eav\Model\Config;
+use Magento\Customer\Model\Customer;
+
+class InstallData implements InstallDataInterface
+{
+	private $eavSetupFactory;
+
+	public function __construct(EavSetupFactory $eavSetupFactory, Config $eavConfig)
+	{
+		$this->eavSetupFactory = $eavSetupFactory;
+		$this->eavConfig       = $eavConfig;
+	}
+
+	public function install(ModuleDataSetupInterface $setup, ModuleContextInterface $context)
+	{
+		$eavSetup = $this->eavSetupFactory->create(['setup' => $setup]);
+		$eavSetup->addAttribute(
+			\Magento\Customer\Model\Customer::ENTITY,
+			'sample_attribute',
+			[
+				'type'         => 'varchar',
+				'label'        => 'Sample Attribute',
+				'input'        => 'text',
+				'required'     => false,
+				'visible'      => true,
+				'user_defined' => true,
+				'position'     => 999,
+				'system'       => 0,
+			]
+		);
+		$sampleAttribute = $this->eavConfig->getAttribute(Customer::ENTITY, 'sample_attribute');
+
+		// more used_in_forms ['adminhtml_checkout','adminhtml_customer','adminhtml_customer_address','customer_account_edit','customer_address_edit','customer_register_address']
+		$sampleAttribute->setData(
+			'used_in_forms',
+			['adminhtml_customer']
+
+		);
+		$sampleAttribute->save();
+	}
+}
+
+run:
+~ php magento setup:upgrade
+~ php bin/magento setup:static-content:deploy

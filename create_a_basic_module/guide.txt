@@ -1,0 +1,134 @@
+I. Module setup
+
+1. Create the following folders:
+
+~ app/code/Inchoo
+
+~ app/code/Inchoo/Helloworld
+
+~~~~~~~~~~~~~~~~~~~~~
+
+2. create a module.xml
+
+~ app/code/Inchoo/Helloworld/etc/module.xml
+
+<?xml version="1.0"?>
+ 
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Module/etc/module.xsd">
+    <module name="Inchoo_Helloworld" setup_version="1.0.0">
+    </module>
+</config>
+
+~~~~~~~~~~~~~~~~~~~~~
+
+3. create a registration.php 
+
+app/code/Inchoo/Helloworld/registration.php 
+
+<?php
+\Magento\Framework\Component\ComponentRegistrar::register(
+    \Magento\Framework\Component\ComponentRegistrar::MODULE,
+    'Inchoo_Helloworld',
+    __DIR__
+);
+
+php bin/magento setup:upgrade
+
+~~~~~~~~~~~~~~~~~~~~~
+II. Creating a controller
+
+1. create a routes.xml
+
+app/code/Inchoo/Helloworld/etc/frontend/routes.xml
+
+<?xml version="1.0"?>
+ 
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:App/etc/routes.xsd">
+    <router id="standard">
+        <route id="helloworld" frontName="helloworld">
+            <module name="Inchoo_Helloworld" />
+        </route>
+    </router>
+</config>
+
+~~~~~~~~~~~~~~~~~
+
+2.  create the Index.php 
+
+app/code/Inchoo/Helloworld/Controller/Index.pgp
+
+3. Creating a block
+
+Create a Helloworld.php
+
+pp/code/Inchoo/Helloworld/Block/Helloworld.php
+
+~~~~~~~~~~~~~~~~~~~~~
+
+III. Creating a layout and template files
+
+1. create a helloworld_index_index.xml 
+
+app/code/Inchoo/Helloworld/view/frontend/layout
+
+2. Create a helloworld.phtml
+
+app/code/Inchoo/Helloworld/view/frontend/templates
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

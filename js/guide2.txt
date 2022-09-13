@@ -1,0 +1,8 @@
+require(['jquery'], function($){
+    $("document").ready(function() {
+        setTimeout(function() {
+            alert('Heeloo World');
+            $('.shipping-address-item.selected-item').trigger('click');
+        },1000);
+    });
+});

@@ -1,0 +1,12 @@
+Set Mode developer92
+
+https://devdocs.magento.com/guides/v2.4/config-guide/cli/config-cli-subcommands-mode.html
+
+bin/magento deploy:mode:set developer
+
+bin/magento deploy:mode:set production
+
+bin/magento deploy:mode:set default
+
+Command usage:
+bin/magento deploy:mode:show

@@ -1,0 +1,160 @@
+How to Add Custom Discount in Magento 2
+
+~~~~~~~~~~~~~~~~~
+Step 1: Enter a total in the sale.xml file
+
+The first thing you need to do is enterring a total in the sale.xml file. Please follow the path to find 
+it: app/code/Mageplaza/HelloWorld/etc/sales.xml, then use the script:
+
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Sales:etc/sales.xsd">
+ <section name="quote">
+   <group name="totals">
+     <item name="customer_discount" instance="Mageplaza\HelloWorld\Model\Total\Quote\Custom" sort_order="420"/>
+   </group>
+ </section>
+</config>
+
+~~~~~~~~~~~~~~~~~
+Step 2: Set the value of discount
+
+Determine and insert the amount of custom discount in the model 
+app/code/Mageplaza/HelloWorld/Model/Total/Quote/Custom.php:
+
+<?php
+namespace Mageplaza\HelloWorld\Model\Total\Quote;
+/**
+* Class Custom
+* @package Mageplaza\HelloWorld\Model\Total\Quote
+*/
+class Custom extends \Magento\Quote\Model\Quote\Address\Total\AbstractTotal
+{
+   /**
+    * @var \Magento\Framework\Pricing\PriceCurrencyInterface
+    */
+   protected $_priceCurrency;
+   /**
+    * Custom constructor.
+    * @param \Magento\Framework\Pricing\PriceCurrencyInterface $priceCurrency
+    */
+   public function __construct(
+       \Magento\Framework\Pricing\PriceCurrencyInterface $priceCurrency
+   ){
+       $this->_priceCurrency = $priceCurrency;
+   }
+   /**
+    * @param \Magento\Quote\Model\Quote $quote
+    * @param \Magento\Quote\Api\Data\ShippingAssignmentInterface $shippingAssignment
+    * @param \Magento\Quote\Model\Quote\Address\Total $total
+    * @return $this|bool
+    */
+   public function collect(
+       \Magento\Quote\Model\Quote $quote,
+       \Magento\Quote\Api\Data\ShippingAssignmentInterface $shippingAssignment,
+       \Magento\Quote\Model\Quote\Address\Total $total
+   )
+   {
+       parent::collect($quote, $shippingAssignment, $total);
+           $baseDiscount = 10;
+           $discount =  $this->_priceCurrency->convert($baseDiscount);
+           $total->addTotalAmount('customdiscount', -$discount);
+           $total->addBaseTotalAmount('customdiscount', -$baseDiscount);
+           $total->setBaseGrandTotal($total->getBaseGrandTotal() - $baseDiscount);
+           $quote->setCustomDiscount(-$discount);
+       return $this;
+   }
+}
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+Step 3: Show the custom discount information in the layout file
+
+~ I have done with two above steps and the Grand Total has changed with the updated price, 
+but your customers can’t see any information about the total discount. Thus, you should be run 
+the following command to add the total in the layout file
+
+app/code/Mageplaza/HelloWorld/view/frontend/layout/checkout_cart_index.xml from the console.
+
+<?xml version="1.0"?>
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <body>
+       <referenceBlock name="checkout.cart.totals">
+           <arguments>
+               <argument name="jsLayout" xsi:type="array">
+                   <item name="components" xsi:type="array">
+                       <item name="block-totals" xsi:type="array">
+                           <item name="children" xsi:type="array">
+                               <item name="custom_discount" xsi:type="array">
+                                   <item name="component"  xsi:type="string">Mageplaza_HelloWorld/js/view/checkout/summary/customdiscount</item>
+                                   <item name="sortOrder" xsi:type="string">20</item>
+                                   <item name="config" xsi:type="array">
+                                       <item name="custom_discount" xsi:type="string" translate="true">Custom Discount</item>
+                                   </item>
+                               </item>
+                           </item>
+                       </item>
+                   </item>
+               </argument>
+           </arguments>
+       </referenceBlock>
+   </body>
+</page>
+
+~~~~~~~~~~~~~~~~~~~~~~~
+Step 4: View model knockout
+
+~ To show the total, firstly call the model knockout 
+app/code/Mageplaza/HelloWorld/view/frontend/web/js/view/checkout/summary/customdiscount.js 
+with the code snippet:
+
+define(
+   [
+       'jquery',
+       'Magento_Checkout/js/view/summary/abstract-total'
+   ],
+   function ($,Component) {
+       "use strict";
+       return Component.extend({
+           defaults: {
+               template: 'Mageplaza_HelloWorld/checkout/summary/customdiscount'
+           },
+           isDisplayedCustomdiscount : function(){
+               return true;
+           },
+           getCustomDiscount : function(){
+               return '$10';
+           }
+       });
+   }
+);
+
+~ Then get the total discount in the template knockout 
+app/code/Mageplaza/HelloWorld/view/frontend/web/template/checkout/summary/customdiscount.html:
+
+<!-- ko if: isDisplayedCustomdiscount() -->
+<tr class="totals customdiscount excl">
+   <th class="mark" colspan="1" scope="row" data-bind="text: custom_discount"></th>
+   <td class="amount">
+       <span class="price" data-bind="text: getCustomDiscount(), attr: {'data-th': custom_discount}"></span>
+   </td>
+</tr>
+<!-- /ko -->
+
+~ When you complete all steps, the custom discount will be immediately applied in the customer’s 
+review cart with the name and the value of the custom discount. Using the custom price and giving 
+them the better pricing are the good idea to boost your sales.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

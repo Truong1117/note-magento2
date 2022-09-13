@@ -1,0 +1,55 @@
+Magento cache overview
+
+~~~~~~~~~~~~~~~~~~~~~~
+I. Cacheable and uncacheable pages
+
+To create an uncacheable page, mark any block on that page as uncacheable in the layout using cacheable="false".
+
+NOTE: Do not configure content pages (i.e., catalog, product, and CMS pages) to be uncacheable. Doing so has an adverse affect on performance.
+
+~~~~~~~~~~~~~~~~~~~~~~~
+II. Public and private content
+Magento can distinguish(phan biet) between two types of content:
+
+~ Public: (e.g., file system, database, Redis, or Varnish)
+
+~ Private: (e.g., wishlist, shopping cart, customer name, and address)
+
+~~~~~~~~~~~~~~~~~~~~~~
+III. Cache types
+
+
+CACHE TYPE “FRIENDLY” NAME	|	CACHE TYPE CODE NAME	|	DESCRIPTION
+----------------------------------------------------------------------------------------------------------------------
+Layout					layout				Compiled page layouts (that is, the layout components from all components). Clean or flush this cache type after modifying layout files.
+Block HTML output			block_html			HTML page fragments per block. Clean or flush this cache type after modifying the view layer.
+Page cache				full_page			Generated HTML pages. If necessary, Magento cleans up this cache automatically, but third-party developers can put any data in any segment of the cache. Clean or flush this cache type after modifying code level that affects HTML output. It’s recommended to keep this cache enabled because caching HTML improves performance significantly.
+Translations				translate			Merged translations from all modules.
+
+
+~~~~~~~~~~~~~~~~~~~~~
+IV. Clean cache
+
+~ To clean cache, run:
+
+$ bin/magento cache:clean <type> ... <type>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

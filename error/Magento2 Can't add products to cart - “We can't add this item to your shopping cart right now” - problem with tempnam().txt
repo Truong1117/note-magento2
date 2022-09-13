@@ -1,0 +1,10 @@
+https://stackoverflow.com/questions/54214726/magento2-cant-add-products-to-cart-we-cant-add-this-item-to-your-shopping-c
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+/root/.htaccess
+
+####################################################
+SetEnv TEMP /www/htdocs/w019d1e4/public_html/var/tmp
+SetEnv TMP /www/htdocs/w019d1e4/public_html/var/tmp
+SetEnv TMPDIR /www/htdocs/w019d1e4/public_html/var/tmp

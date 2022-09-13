@@ -1,0 +1,16 @@
+1. /public_html-test/app/design/frontend/Splendid/thomar/web/webfonts
+
+~~~~~~~~~~~~~~~~~~
+2. /public_html-test/app/design/frontend/Splendid/thomar/web/css/all.min.css
+
+
+~~~~~~~~~~~~~~~~~~~
+3. /public_html-test/app/design/frontend/Splendid/thomar/Magento_Theme/layout/default_head_blocks.xml
+<?xml version="1.0"?>
+
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <head>
+ 
+         <css src="css/all.min.css" />
+    </head>
+</page>

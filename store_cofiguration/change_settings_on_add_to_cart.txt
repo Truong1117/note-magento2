@@ -1,0 +1,6 @@
+Stores->Configuration
+-> SALES -> Checkout
+
+Shopping Cart:
+
+After Adding a Product Redirect to Shopping Cart: Yes

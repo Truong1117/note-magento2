@@ -1,0 +1,5 @@
+Open conf.d/
+cd /etc/nginx/conf.d
+-delete: sudo rm -ri [name_file]
+
+sudo rm -rI [name_file]

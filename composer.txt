@@ -1,0 +1,7 @@
+# Run:
+composer init
+
+#Tich hop thu vien:
+composer require [name/name]
+
+composer dump-autoload

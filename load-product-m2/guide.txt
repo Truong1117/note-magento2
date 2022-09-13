@@ -1,0 +1,48 @@
+app/code/YourCompanyName/YourModuleName/Block/YourCustomBlock.php
+
+<?php
+namespace YourCompanyName\YourModuleName\Block;
+class YourCustomBlock extends \Magento\Framework\View\Element\Template
+{ 
+    protected $_productCollectionFactory;
+  
+    protected $_productVisibility;
+  
+    public function __construct(
+        \Magento\Framework\View\Element\Template\Context $context, 
+        \Magento\Catalog\Model\ResourceModel\Product\CollectionFactory $productCollectionFactory,
+        \Magento\Catalog\Model\Product\Visibility $productVisibility,
+        array $data = []
+    ) {
+        $this->_productCollectionFactory = $productCollectionFactory; 
+        $this->_productVisibility = $productVisibility; 
+        parent::__construct($context, $data);
+    }
+  
+    public function getProductCollection() {
+        $collection = $this->_productCollectionFactory->create();
+        $collection->addAttributeToSelect('*');
+  
+        // filter current website products
+        $collection->addWebsiteFilter();
+ 
+        // filter current store products
+        $collection->addStoreFilter();
+  
+        // set visibility filter
+        $collection->setVisibility($this->productVisibility->getVisibleInSiteIds());
+  
+        // fetching only 5 products
+        $collection->setPageSize(5); 
+  
+        return $collection;
+    }
+}
+
+~ Next, will use the functions in your view .phtml file as following:
+
+$productCollection = $block->getProductCollection(); 
+foreach ($productCollection as $product) { 
+    echo $product->getId() . '<br />';
+    echo $product->getName() . '<br />';
+}

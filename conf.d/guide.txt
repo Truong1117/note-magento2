@@ -1,0 +1,21 @@
+https://stackoverflow.com/questions/35868976/nginx-job-for-nginx-service-failed-because-the-control-process-exited
+
+cd /etc/nginx/conf.d
+
+check it: sudo netstat -tulpn
+
+Get the PID of the process that uses port 80 or 443. And send the kill command changing the <PID> value:
+
+sudo kill -2 <PID>
+
+Note in my example the PID value of Apache was 1762 so I would execute sudo kill -2 1762
+
+Aternatively you can execute the following:
+
+sudo fuser -k 80/tcp
+
+sudo fuser -k 443/tcp
+
+Now that port 80 or 443 is clear, you can start Nginx by running the following:
+
+sudo service nginx restart

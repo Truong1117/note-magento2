@@ -1,0 +1,31 @@
+
+
+    protected $_urlInterface;
+
+public function __construct(
+        \Magento\Framework\UrlInterface $urlInterface,
+    ) {
+        $this->_urlInterface = $urlInterface;
+    }
+
+    public function getBaseUrls()
+    {
+        return $this->_urlInterface->getBaseUrl();
+    }
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+use Magento\Framework\Controller\ResultFactory;
+
+$resultRedirect = $this->resultFactory->create(ResultFactory::TYPE_REDIRECT);
+
+return $resultRedirect->setPath('knockoutjs/index/index');
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+public function __construct(
+        \Magento\Store\Model\StoreManagerInterface $storeManager,
+    ) {
+        $this->_storeManager = $storeManager;
+    }
+
+return $this->_storeManager->getStore()->getBaseUrl() . 'knockoutjs/index/index';

@@ -1,0 +1,148 @@
+***
+Create System.xml Configuration
+***
+Store -> Setting -> Configuration
+
+~~~~~~~~~~~~~~~~
+Step 1: Create System.xml
+Step 2: Set default value
+Step 3: Flush Magento cache
+Step 4: Get value from configuration
+~~~~~~~~~~~~~~~~
+Step 1: Create System.xml:
+The magento 2 system configuration page is divided logically in few parts: Tabs, Sections, Groups, Fields.
+
+File: app/code/Mageplaza/HelloWorld/etc/adminhtml/system.xml
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
+    <system>
+        <tab id="mageplaza" translate="label" sortOrder="10">
+            <label>Mageplaza</label>
+        </tab>
+        <section id="helloworld" translate="label" sortOrder="130" showInDefault="1" showInWebsite="1" showInStore="1">
+            <class>separator-top</class>
+            <label>Hello World</label>
+            <tab>mageplaza</tab>
+            <resource>Mageplaza_HelloWorld::helloworld_config</resource>
+            <group id="general" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="0" showInStore="0">
+                <label>General Configuration</label>
+                <field id="enable" translate="label" type="select" sortOrder="1" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Module Enable</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="display_text" translate="label" type="text" sortOrder="1" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Display Text</label>
+                    <comment>This text will display on the frontend.</comment>
+                </field>
+            </group>
+        </section>
+    </system>
+</config>
+
+Checking this code, you will see how to create a Tab, Section, Group and Field. We will find more detail about each element:
+
+* The Tab element may have many sections and some main attributes and child:
+	~ Id: attribute is the identify for this tab
+	~ sortOrder: attribute will define the position of this tab.
+	~ Translate: attribute let Magento know which title need to translate
+	~ Label: element child is the text which will show as tab title.
+* The Section element will have id, sortOrder, translate attributes like the Tab element. Some other attributes (showInDefault, showInWebsite, showInStore) will decide this element will be show on each scope or not. You can change the scope here
+
+*The section may have many group and some other child elements:
+	~ Class: this value will be added as class for this element. You should you it if you want to make-up this element.
+	~ Label: the text title of this element
+	~ Tab: this’s a tab id. This tab element will let Magento know the tab which this section is belong to. This section will be placed under that tab
+	~ Resource: defined the ACL rule which the admin user must have in order to access this configuration.
+	~ Group: This element may have many field and some attributes which is same as Sections.
+	~ Fields: is the main path of this page. It will save the data which we want to setting. In this element, we focus on the type attribute. It will define how the element is when display. It can be: text, select, file… In this example we create 2 fields with type select and text. With each type we will define the child element for the field to make it work as we want.
+
+Step 2: Set default value:
+File: app/code/Mageplaza/HelloWorld/etc/config.xml
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
+    <default>
+        <helloworld>
+            <general>
+                <enable>1</enable>
+                <display_text>Hello World</display_text>
+            </general>
+        </helloworld>
+    </default>
+</config>
+
+Step 3: Flush Magento Cache
+php bin/magento c:c
+
+Step 4: Get value from configuration
+In the system.xml, we have added 2 fields: enable and display_text. So the path should be:
+helloworld/general/enable
+helloworld/general/display_text
+
+4.1 Simple calling:
+$this->scopeConfig->getValue('helloworld/general/enable', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
+$this->scopeConfig->getValue('helloworld/general/display_text', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
+
+4.2 Create a helper file (standard)
+Create file: app/code/Mageplaza/HelloWorld/Helper/Data.php
+<?php
+
+namespace Mageplaza\HelloWorld\Helper;
+
+use Magento\Framework\App\Helper\AbstractHelper;
+use Magento\Store\Model\ScopeInterface;
+
+class Data extends AbstractHelper
+{
+
+	const XML_PATH_HELLOWORLD = 'helloworld/';
+
+	public function getConfigValue($field, $storeId = null)
+	{
+		return $this->scopeConfig->getValue(
+			$field, ScopeInterface::SCOPE_STORE, $storeId
+		);
+	}
+
+	public function getGeneralConfig($code, $storeId = null)
+	{
+
+		return $this->getConfigValue(self::XML_PATH_HELLOWORLD .'general/'. $code, $storeId);
+	}
+
+}
+
+Now, we try get it in controller.
+File: app/code/Mageplaza/HelloWorld/Controller/Index/Config.php
+<?php
+
+namespace Mageplaza\HelloWorld\Controller\Index;
+
+class Config extends \Magento\Framework\App\Action\Action
+{
+
+	protected $helperData;
+
+	public function __construct(
+		\Magento\Framework\App\Action\Context $context,
+		\Mageplaza\HelloWorld\Helper\Data $helperData
+
+	)
+	{
+		$this->helperData = $helperData;
+		return parent::__construct($context);
+	}
+
+	public function execute()
+	{
+
+		// TODO: Implement execute() method.
+
+		echo $this->helperData->getGeneralConfig('enable');
+		echo $this->helperData->getGeneralConfig('display_text');
+		exit();
+
+	}
+}
+
+Step 5: clear cache
+php bin/magento c:c

@@ -1,0 +1,110 @@
+How to Create a Catalog Price Rule in Magento 2
+
+~~~~~~~~~~~~~~~
+I. What is the Catalog Price Rule?
+The Catalog Price Rule is a special rule with conditions you define in the configuration,that allows your 
+customers to buy products at a discounted price. The setting of conditions isn’t required if the rule is 
+offered for all products. The Catalog Price Rule is auto-applied when products meet the set conditions 
+instead of including coupon codes.
+
+~~~~~~~~~~~~~~~~
+II. To Creating Catalog Price Rule in Magento 2
+To create Catalog Price Rule in Magento 2, do the following steps:
+
+Step 1: Create a New Catalog Price Rule
+Step 2: Set the Catalog Price Conditions
+Step 3: Set the Catalog Price Actions
+Step 4: Apply the Rule
+
+~~~~~~~~~~~~~~~~~~~~~
+Step 1: Create a New Rule
+
+On the Admin Panel, Marketing > Promotions > Catalog Price Rule.
+
+Click on Add New Rule and complete 3 tabs: Rule Information, Conditions, and Actions.
+
+In the Rule Information tab:
+
+	~ Set Namefor the new rule and leave some descriptions of that.
+
+	~ Assign to the Website and Customer Group
+
+	~ Set Status to Active which the rule is apllied.
+
+	~ If there are many cart price rule at the same time, should set the active time and priorty.
+
+~~~~~~~~~~~~~~~~~~~
+Step 2: Set the Conditions
+
+You can set some special conditions for each rule based on some existing attribute values. 
+In case of using the rule for all products, you need to obmit this tab.
+
+~ Under the Catalog Price Rule, choose Condition tab.
+
+~ The short message If ALL of these conditions are TRUE is visible for you, and especially, 
+you can customize the message when click on ALL and TRUE link.
+
+	~~ Click on the ALL link, ALL and ANY options are available.
+
+	~~ Click on the TRUE link, TRUE and FALSE options are available.
+
+~ Leave the conditions blank if you want to apply for all products
+
+~ Click on Add icon to set conditions for the rule:
+
+	~~ Set the Product Attribute as the basic of the conditions such as Attribute Set, Category, etc.
+
+	~~ Continue tapping the Add button and follow these steps again to add as many conditions as you need.
+
+~~~~~~~~~~~~~~~~~~~
+Step 3: Set the Actions
+
+~ In the left panel of the New Catalog Price Rule page, choose Action tab.
+
+~ In the Apply field, set to options:
+
+	~~ Apply as percentage of original: The updated price is calculated by eliminating a percentage of original price.
+	
+	~~ Apply as fixed amount: The discount is the number inserted into the Discount Amount field.
+
+	~~ Adjust final price to this percentage: The updated price is the percentage of the original price.
+
+	~~ Adjust final price to discount value: The updated price is a fixed number.
+
+~ Insert the Discount Amount.
+
+~ Pricing Structure Rules includes the setting discount for subproduct when choosing Yes in the 
+Subproduct Discounts field.
+
+~ To avoid applying the discount many times for a single customer, you need to set Yes for 
+Discard Subsequent Rules.
+
+~ Click Save and Continue Edit.
+
+~~~~~~~~~~~~~~~~~~~~
+Step 4: Apply the Rule
+
+~ To apply the rule, follow one of two ways:
+
+	~~ On the Add New Rule page, click the Save and Apply.
+
+	~~ On the Catalog Price Rule grid, click the Apply Rule
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

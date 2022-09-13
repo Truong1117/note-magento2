@@ -1,0 +1,37 @@
+***
+Common Error HTTP Codes in Magento Rest API 
+***
+1. HTTP Error 400
+~ Constant: Magento\Framework\Webapi\Exception::HTTP_BAD_REQUEST
+
+~ Description: The request data is invalid.
+
+2. HTTP Error 401
+~ Constant: Magento\Framework\Webapi\Exception::HTTP_UNAUTHORIZED
+
+~ Description: The authorization is failed.
+
+3. HTTP Error 403
+~ Constant: Magento\Framework\Webapi\Exception::HTTP_FORBIDDEN
+
+~ Description: Access denied.
+
+4. HTTP Error 404
+~ Constant: Magento\Framework\Webapi\Exception::HTTP_NOT_FOUND
+
+~ Description: Resource not found.
+
+5. HTTP Error 405
+~ Constant: Magento\Framework\Webapi\Exception::HTTP_METHOD_NOT_ALLOWED
+
+~ Description: Resource does not support method. / Resource method not implemented yet.
+
+6. HTTP Error 406
+~ Constant: Magento\Framework\Webapi\Exception::HTTP_NOT_ACCEPTABLE
+
+~ Description: The requested resource doesn’t accept the request.
+
+7. HTTP Error 500
+~ Constant: Magento\Framework\Webapi\Exception::HTTP_INTERNAL_ERROR
+
+~ Description: Resource internal error.

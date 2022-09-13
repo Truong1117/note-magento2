@@ -1,0 +1,13 @@
+
+~ XML change: delete cache
+php bin/magento c:c
+
+~ Class change:
+php bin/magento setup:upgrade
+
+~ File CSS, JS, .XML: 
+php bin/magento setup:static-content:deploy
+
+~ bin/magento setup:db:status
+
+~ php bin/magento setup:di:compile

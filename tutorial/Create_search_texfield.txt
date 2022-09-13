@@ -1,0 +1,31 @@
+~~~~~~~~~~~~
+listing.xml
+<listingToolbar name="listing_top">
+        <filters name="listing_filters">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="statefull" xsi:type="array">
+                        <item name="applied" xsi:type="boolean">false</item>
+                    </item>
+                    <item name="params" xsi:type="array">
+                        <item name="filters_modifier" xsi:type="array"/>
+                    </item>
+                </item>
+            </argument>
+        </filters>
+    </listingToolbar>
+
+~~~~~~~~~~~~~~~~
+After dataSource tag in your grid xml file.
+
+Also add :
+public function addFilter(\Magento\Framework\Api\Filter $filter)
+    {
+        $field = $filter->getField();
+
+        if (in_array($field, ['id','name'])) {
+            $filter->setField($field);
+        }
+
+        parent::addFilter($filter);
+    }

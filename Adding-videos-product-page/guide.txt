@@ -1,0 +1,6 @@
+link: https://inchoo.net/magento-2/adding-videos-product-page-magento2/
+
+Admin:
+Go to Store -> Configuration -> Catalog -> Catalog -> Product Video.
+
+

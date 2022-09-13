@@ -1,0 +1,107 @@
+***
+Overview of Magento 2 Composer
+***
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Explanation of composer.json files
+
+1. Root
+~ Location: composer.json
+
+~ Name: magento/magento2ce
+
+~ Type: project
+
+2. CE project
+~ Location: composer.json
+
+~ Name: magento/project-community-edition
+
+~ Type: project
+
+3. CE product
+~ Location: composer.json
+
+~ Name: magento/product-community-edition
+
+~ Type: metapackage
+
+4. Magento Framework
+~ Location: lib/internal/Magento/Framework/composer.json
+
+~ Name: magento/framework
+
+~ Type: magento2-library
+
+5. Module
+~ Locations:
+	app/code/<vendor-name>/<module-name>/composer.json
+
+	vendor/<vendor-name>/<module-name>/composer.json
+
+~ Name: <vendor-name>/<package-name>
+
+~ Type: magento2-module
+
+6. Theme
+~ Locations:
+	app/design/frontend/<vendor-name>/<theme-name>/composer.json
+
+	app/design/adminhtml/<vendor-name>/<theme-name>/composer.json
+
+~ Name: <vendor-name>/<package-name>
+
+~ Type: magento2-theme
+
+7. Language Package
+~ Location: app/i18n/<vendor-name>/<language-code>/composer.json
+
+~ Name: <vendor-name>/<package-name>
+
+~ Type: magento2-language
+
+~~~~~~~~~~~~~~~~~~~~~~~~~
+Kinds of the component in Magento 2 Composer
+There are many kinds of Magento 2 component like a module, theme, or language package. 
+
+~~~~~~~~~~~~~~~~~~~~~~~~~
+Naming conventions of the component in Magento 2 Composer
+
+1. vendor-name
+
+{
+  "name": "mageplaza/magento-2-seo-extension",
+  "description": "Magento 2 SEO extension",
+  "require": {
+    "php": "~5.5.0|~5.6.0|~7.0.0",
+    "mageplaza/core-m2": "dev-master"
+  },
+  "type": "magento2-module",
+  "version": "1.1.1",
+  "license": [
+    "OSL-3.0",
+    "AFL-3.0"
+  ],
+  "authors": [
+    {
+      "name": "Mageplaza",
+      "email": "hi@mageplaza.com",
+      "homepage": "https://www.mageplaza.com",
+      "role": "Leader"
+    }
+  ],
+  "autoload": {
+    "files": [
+      "registration.php"
+    ],
+    "psr-4": {
+      "Mageplaza\\Seo\\": ""
+    }
+  }
+}
+
+2. package-name
+The package-name also contains the lowercase with multiple words, 
+so Magento 2 Composer asks for separating them by dash as the following convention:
+magento2/<type-prefix>-<suffix>[-<suffix>]...
+

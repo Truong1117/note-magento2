@@ -1,0 +1,12 @@
+/var/www/html/bootskram/app/design/frontend/TemplateMonster/theme007/Magento_Theme/web/js/owl.carousel.js
+
+~~~~~~~~~~~~~~~~~~~~~~~~
+app/design/frontend/TemplateMonster/theme007/TemplateMonster_FeaturedProduct/templates/widget/products-grid.phtml:
+
+    <img class="owl-lazy" data-src="<?php echo $resizedImageUrl;?>" alt="<?php echo $block->escapeHtml($_item->getName()) ?>" itemprop="image"/>
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+ lazyLoad : true,
+app/design/frontend/TemplateMonster/theme007/TemplateMonster_ShopByBrand/templates/widget/brand/default.phtml
+<img class="owl-lazy" data-src="<?php echo $helper->resizeImageUrl($brand->getImageLogoName(), $brandLogoWidth); ?>" alt="<?php echo $block->escapeHtml($brand->getName()) ?>">

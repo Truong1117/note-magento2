@@ -1,0 +1,434 @@
+***
+Create/Save Admin Grid
+***
+2 ways to create Admin Grid: using layout and using component.
+~~~~~~~~~~~~~~~~~~~~~~
+Step 1: Create database schema
+Step 2: Create routes admin
+Step 3: Create admin menu
+Step 4: Create Controller
+Step 5: Create Admin Grid using Component
+Step 6: Create Admin Grid using Layout
+~~~~~~~~~~~~~~~~~~~~~~
+Step 1: Create database schema
+app/code/Mageplaza/HelloWorld/Setup/InstallSchema.php
+<?php
+
+namespace Mageplaza\HelloWorld\Setup;
+
+class InstallSchema implements \Magento\Framework\Setup\InstallSchemaInterface
+{
+
+	public function install(\Magento\Framework\Setup\SchemaSetupInterface $setup, \Magento\Framework\Setup\ModuleContextInterface $context)
+	{
+		$installer = $setup;
+		$installer->startSetup();
+		if (!$installer->tableExists('mageplaza_helloworld_post')) {
+			$table = $installer->getConnection()->newTable(
+				$installer->getTable('mageplaza_helloworld_post')
+			)
+				->addColumn(
+					'post_id',
+					\Magento\Framework\DB\Ddl\Table::TYPE_INTEGER,
+					null,
+					[
+						'identity' => true,
+						'nullable' => false,
+						'primary'  => true,
+						'unsigned' => true,
+					],
+					'Post ID'
+				)
+				->addColumn(
+					'name',
+					\Magento\Framework\DB\Ddl\Table::TYPE_TEXT,
+					255,
+					['nullable => false'],
+					'Post Name'
+				)
+				->addColumn(
+					'url_key',
+					\Magento\Framework\DB\Ddl\Table::TYPE_TEXT,
+					255,
+					[],
+					'Post URL Key'
+				)
+				->addColumn(
+					'post_content',
+					\Magento\Framework\DB\Ddl\Table::TYPE_TEXT,
+					'64k',
+					[],
+					'Post Post Content'
+				)
+				->addColumn(
+					'tags',
+					\Magento\Framework\DB\Ddl\Table::TYPE_TEXT,
+					255,
+					[],
+					'Post Tags'
+				)
+				->addColumn(
+					'status',
+					\Magento\Framework\DB\Ddl\Table::TYPE_INTEGER,
+					1,
+					[],
+					'Post Status'
+				)
+				->addColumn(
+					'featured_image',
+					\Magento\Framework\DB\Ddl\Table::TYPE_TEXT,
+					255,
+					[],
+					'Post Featured Image'
+				)
+				->addColumn(
+					'created_at',
+					\Magento\Framework\DB\Ddl\Table::TYPE_TIMESTAMP,
+					null,
+					['nullable' => false, 'default' => \Magento\Framework\DB\Ddl\Table::TIMESTAMP_INIT],
+					'Created At'
+				)->addColumn(
+					'updated_at',
+					\Magento\Framework\DB\Ddl\Table::TYPE_TIMESTAMP,
+					null,
+					['nullable' => false, 'default' => \Magento\Framework\DB\Ddl\Table::TIMESTAMP_INIT_UPDATE],
+					'Updated At')
+				->setComment('Post Table');
+			$installer->getConnection()->createTable($table);
+
+			$installer->getConnection()->addIndex(
+				$installer->getTable('mageplaza_helloworld_post'),
+				$setup->getIdxName(
+					$installer->getTable('mageplaza_helloworld_post'),
+					['name', 'url_key', 'post_content', 'tags', 'featured_image'],
+					\Magento\Framework\DB\Adapter\AdapterInterface::INDEX_TYPE_FULLTEXT
+				),
+				['name', 'url_key', 'post_content', 'tags', 'featured_image'],
+				\Magento\Framework\DB\Adapter\AdapterInterface::INDEX_TYPE_FULLTEXT
+			);
+		}
+		$installer->endSetup();
+	}
+}
+
+Step 2: Create routes admin
+File: app/code/Mageplaza/HelloWorld/etc/adminhtml/routes.xml
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:App/etc/routes.xsd">
+    <router id="admin">
+        <route id="mageplaza_helloworld" frontName="mageplaza_helloworld">
+            <module name="Mageplaza_HelloWorld"/>
+        </route>
+    </router>
+</config>
+
+Step 3: Create admin menu
+Admin menu/Route: we will use the route mageplaza_helloworld for our admin page and the menu link to:
+mageplaza_helloworld/post/index
+
+Step 4: Create Controller
+app/code/Mageplaza/HelloWorld/Controller/Adminhtml/Post/Index.php
+
+Step 5: Method #1 - Create Admin Grid using Component
+Step 5.1: Declare resource
+File: app/code/Mageplaza/HelloWorld/etc/di.xml
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../../../lib/internal/Magento/Framework/ObjectManager/etc/config.xsd">
+    <type name="Magento\Framework\View\Element\UiComponent\DataProvider\CollectionFactory">
+        <arguments>
+            <argument name="collections" xsi:type="array">
+                <item name="mageplaza_helloworld_post_listing_data_source" xsi:type="string">Mageplaza\HelloWorld\Model\ResourceModel\Post\Grid\Collection</item>
+            </argument>
+        </arguments>
+    </type>
+    <virtualType name="Mageplaza\HelloWorld\Model\ResourceModel\Post\Grid\Collection" type="Magento\Framework\View\Element\UiComponent\DataProvider\SearchResult">
+        <arguments>
+            <argument name="mainTable" xsi:type="string">mageplaza_helloworld_post</argument>
+            <argument name="resourceModel" xsi:type="string">Mageplaza\HelloWorld\Model\ResourceModel\Post</argument>
+        </arguments>
+    </virtualType>
+</config>
+
+Step 5.2: Create layout file
+For the action mageplaza_helloworld/post/index, we will create a layout file name mageplaza_helloworld_post_index.xml
+File: app/code/Mageplaza/HelloWorld/view/adminhtml/layout/mageplaza_helloworld_post_index.xml
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../../../../../lib/internal/Magento/Framework/View/Layout/etc/page_configuration.xsd">
+    <update handle="styles"/>
+    <body>
+        <referenceContainer name="content">
+            <uiComponent name="mageplaza_helloworld_post_listing"/>
+        </referenceContainer>
+    </body>
+</page>
+
+Step 5.3: Create component layout file
+As declaration in layout file, we will create a component file mageplaza_helloworld_post_listing.xml
+File: app/code/Mageplaza/HelloWorld/view/adminhtml/ui_component/mageplaza_helloworld_post_listing.xml
+<listing xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Ui:etc/ui_configuration.xsd">
+    <argument name="data" xsi:type="array">
+        <item name="js_config" xsi:type="array">
+            <item name="provider" xsi:type="string">mageplaza_helloworld_post_listing.mageplaza_helloworld_post_listing_data_source</item>
+            <item name="deps" xsi:type="string">mageplaza_helloworld_post_listing.mageplaza_helloworld_post_listing_data_source</item>
+        </item>
+        <item name="spinner" xsi:type="string">spinner_columns</item>
+        <item name="buttons" xsi:type="array">
+            <item name="add" xsi:type="array">
+                <item name="name" xsi:type="string">add</item>
+                <item name="label" xsi:type="string" translate="true">Add New Post</item>
+                <item name="class" xsi:type="string">primary</item>
+                <item name="url" xsi:type="string">*/*/new</item>
+            </item>
+        </item>
+    </argument>
+    <dataSource name="nameOfDataSource">
+        <argument name="dataProvider" xsi:type="configurableObject">
+            <argument name="class" xsi:type="string">Magento\Framework\View\Element\UiComponent\DataProvider\DataProvider</argument>
+            <argument name="name" xsi:type="string">mageplaza_helloworld_post_listing_data_source</argument>
+            <argument name="primaryFieldName" xsi:type="string">post_id</argument>
+            <argument name="requestFieldName" xsi:type="string">id</argument>
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="component" xsi:type="string">Magento_Ui/js/grid/provider</item>
+                    <item name="update_url" xsi:type="url" path="mui/index/render"/>
+                    <item name="storageConfig" xsi:type="array">
+                        <item name="indexField" xsi:type="string">post_id</item>
+                    </item>
+                </item>
+            </argument>
+        </argument>
+    </dataSource>
+    <columns name="spinner_columns">
+        <selectionsColumn name="ids">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="resizeEnabled" xsi:type="boolean">false</item>
+                    <item name="resizeDefaultWidth" xsi:type="string">55</item>
+                    <item name="indexField" xsi:type="string">post_id</item>
+                </item>
+            </argument>
+        </selectionsColumn>
+        <column name="post_id">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="filter" xsi:type="string">textRange</item>
+                    <item name="sorting" xsi:type="string">asc</item>
+                    <item name="label" xsi:type="string" translate="true">ID</item>
+                </item>
+            </argument>
+        </column>
+        <column name="name">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="filter" xsi:type="string">text</item>
+                    <item name="editor" xsi:type="array">
+                        <item name="editorType" xsi:type="string">text</item>
+                        <item name="validation" xsi:type="array">
+                            <item name="required-entry" xsi:type="boolean">true</item>
+                        </item>
+                    </item>
+                    <item name="label" xsi:type="string" translate="true">Name</item>
+                </item>
+            </argument>
+        </column>
+        <column name="created_at" class="Magento\Ui\Component\Listing\Columns\Date">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="filter" xsi:type="string">dateRange</item>
+                    <item name="component" xsi:type="string">Magento_Ui/js/grid/columns/date</item>
+                    <item name="dataType" xsi:type="string">date</item>
+                    <item name="label" xsi:type="string" translate="true">Created</item>
+                </item>
+            </argument>
+        </column>
+        <column name="updated_at" class="Magento\Ui\Component\Listing\Columns\Date">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="filter" xsi:type="string">dateRange</item>
+                    <item name="component" xsi:type="string">Magento_Ui/js/grid/columns/date</item>
+                    <item name="dataType" xsi:type="string">date</item>
+                    <item name="label" xsi:type="string" translate="true">Modified</item>
+                </item>
+            </argument>
+        </column>
+    </columns>
+</listing>
+
+From Step 5.4 to Step 5.11: in file
+File: app/code/Mageplaza/HelloWorld/view/adminhtml/ui_component/mageplaza_helloworld_post_listing.xml
+
+Step 5.4: Create a listing toolbar
+<?xml version="1.0" encoding="UTF-8"?>
+<listing xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Ui:etc/ui_configuration.xsd">
+    <!-- ... other block of code -->
+    <listingToolbar name="listing_top">
+        <argument name="data" xsi:type="array">
+            <item name="config" xsi:type="array">
+                <item name="sticky" xsi:type="boolean">true</item>
+            </item>
+        </argument>
+    </listingToolbar>
+    <!-- ... other block of code -->
+</listing>
+
+From Step 5.5 to Step 5.11: block of code in:
+<listingToolbar name="listing_top">
+<!-- ... other block of code -->    
+
+ <!-- ... other block of code -->
+</listingToolbar>
+Step 5.5: Create a Bookmark
+
+	<bookmark name="bookmarks"/>
+
+Step 5.6: Column controls
+
+	<columnsControls name="columns_controls"/>
+
+Step 5.7: Full text search
+
+    </listingToolbar>
+
+Step 5.8: Filter
+
+	<filters name="listing_filters" />
+
+Step 5.9: Mass actions
+
+        <massaction name="listing_massaction">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="component" xsi:type="string">Magento_Ui/js/grid/tree-massactions</item>
+                </item>
+            </argument>
+            <action name="delete">
+                <argument name="data" xsi:type="array">
+                    <item name="config" xsi:type="array">
+                        <item name="type" xsi:type="string">delete</item>
+                        <item name="label" xsi:type="string" translate="true">Delete</item>
+                        <item name="url" xsi:type="url" path="mageplaza_helloworld/post/massDelete"/>
+                        <item name="confirm" xsi:type="array">
+                            <item name="title" xsi:type="string" translate="true">Delete Post</item>
+                            <item name="message" xsi:type="string" translate="true">Are you sure you wan't to delete selected items?</item>
+                        </item>
+                    </item>
+                </argument>
+            </action>
+        </massaction>
+
+Step 5.10: Paging
+ 
+	<paging name="listing_paging"/>
+
+Step 5.11: Export button
+
+	<exportButton name="export_button"/>
+
+
+Step 6: Method #2 - Create Admin Grid using Layout
+Step 6.1: Create block for this grid
+File: app/code/Mageplaza/Mageplaza/Block/Adminhtml/Post.php
+<?php
+namespace Mageplaza\HelloWorld\Block\Adminhtml;
+
+class Post extends \Magento\Backend\Block\Widget\Grid\Container
+{
+
+	protected function _construct()
+	{
+		$this->_controller = 'adminhtml_post';
+		$this->_blockGroup = 'Mageplaza_HelloWorld';
+		$this->_headerText = __('Posts');
+		$this->_addButtonLabel = __('Create New Post');
+		parent::_construct();
+	}
+}
+The Grid block will extend \Magento\Backend\Block\Widget\Grid\Container and define some variable in the _construct() method.
+	_blockGroup: is the name of our module with format VendorName_ModuleName
+	_controller: is the path to the Grid block inside the Block folder. In this helloWorld, I put the Grid.php file inside of the Adminhtml/Post folder
+	_headerText: is the Grid page title
+	_addButtonLabel: is the label of the Add new button.
+
+Step 6.2: Create layout file
+File: app/code/Mageplaza/HelloWorld/view/adminhtml/layout/mageplaza_helloworld_post_index.xml
+<?xml version="1.0"?>
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <update handle="styles"/>
+    <body>
+        <referenceContainer name="content">
+            <block class="Mageplaza\HelloWorld\Block\Adminhtml\Post" name="mageplaza_post_grid">
+                <block class="Magento\Backend\Block\Widget\Grid" name="mageplaza_post_grid.grid" as="grid">
+                    <arguments>
+                        <argument name="id" xsi:type="string">post_id</argument>
+                        <argument name="dataSource" xsi:type="object">Mageplaza\HelloWorld\Model\ResourceModel\Post\Collection</argument>
+                        <argument name="default_sort" xsi:type="string">id</argument>
+                        <argument name="default_dir" xsi:type="string">ASC</argument>
+                        <argument name="save_parameters_in_session" xsi:type="string">1</argument>
+                    </arguments>
+                    <block class="Magento\Backend\Block\Widget\Grid\ColumnSet" name="mageplaza_post_grid.grid.columnSet" as="grid.columnSet">
+                        <arguments>
+                            <argument name="rowUrl" xsi:type="array">
+                                <item name="path" xsi:type="string">*/*/edit</item>
+                            </argument>
+                        </arguments>
+                        <block class="Magento\Backend\Block\Widget\Grid\Column" as="post_id">
+                            <arguments>
+                                <argument name="header" xsi:type="string" translate="true">ID</argument>
+                                <argument name="index" xsi:type="string">post_id</argument>
+                                <argument name="type" xsi:type="string">text</argument>
+                                <argument name="column_css_class" xsi:type="string">col-id</argument>
+                                <argument name="header_css_class" xsi:type="string">col-id</argument>
+                            </arguments>
+                        </block>
+                        <block class="Magento\Backend\Block\Widget\Grid\Column" as="name">
+                            <arguments>
+                                <argument name="header" xsi:type="string" translate="true">Name</argument>
+                                <argument name="index" xsi:type="string">name</argument>
+                                <argument name="type" xsi:type="string">text</argument>
+                                <argument name="column_css_class" xsi:type="string">col-id</argument>
+                                <argument name="header_css_class" xsi:type="string">col-id</argument>
+                            </arguments>
+                        </block>
+                        <block class="Magento\Backend\Block\Widget\Grid\Column" as="created_at">
+                            <arguments>
+                                <argument name="header" xsi:type="string" translate="true">Created</argument>
+                                <argument name="index" xsi:type="string">created_at</argument>
+                                <argument name="type" xsi:type="string">date</argument>
+                                <argument name="column_css_class" xsi:type="string">col-id</argument>
+                                <argument name="header_css_class" xsi:type="string">col-id</argument>
+                            </arguments>
+                        </block>
+                        <block class="Magento\Backend\Block\Widget\Grid\Column" as="updated_at">
+                            <arguments>
+                                <argument name="header" xsi:type="string" translate="true">Modified</argument>
+                                <argument name="index" xsi:type="string">updated_at</argument>
+                                <argument name="type" xsi:type="string">date</argument>
+                                <argument name="column_css_class" xsi:type="string">col-id</argument>
+                                <argument name="header_css_class" xsi:type="string">col-id</argument>
+                            </arguments>
+                        </block>
+                    </block>
+                </block>
+            </block>
+        </referenceContainer>
+    </body>
+</page>
+
+Step 6.4: Add Column
+<block class="Magento\Backend\Block\Widget\Grid\Massaction" name="mageplaza.helloWorld.massaction" as="grid.massaction">
+    <arguments>
+        <argument name="massaction_id_field" xsi:type="string">post_id</argument>
+        <argument name="form_field_name" xsi:type="string">ids</argument>
+        <argument name="use_select_all" xsi:type="string">1</argument>
+        <argument name="options" xsi:type="array">
+            <item name="disable" xsi:type="array">
+                <item name="label" xsi:type="string" translate="true">Delete</item>
+                <item name="url" xsi:type="string">*/*/massDelete</item>
+            </item>
+        </argument>
+    </arguments>
+</block>
+
+
+
+
+
+

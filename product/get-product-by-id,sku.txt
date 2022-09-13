@@ -1,0 +1,84 @@
+How to Get Product by ID, SKU in Magento 2
+
+~ Step 1: Declare the command to get product id and sku
+
+~ Step 2: Load product id and sku in template file
+~~~~~~~~~~~~~~~~~~
+
+Step 1: Declare the command to get product id and sku
+
+~ You will use a block class of the module Mageplaza_HelloWorld, then possibly inject the object of 
+\Magento\Catalog\Model\ProductRepository class in the constructor of the module’s block class.
+
+app/code/Mageplaza/HelloWorld/Block/HelloWorld.php
+
+<?php
+namespace Mageplaza\HelloWorld\Block;
+class HelloWorld extends \Magento\Framework\View\Element\Template
+{	
+	protected $_productRepository;
+		
+	public function __construct(
+		\Magento\Backend\Block\Template\Context $context,		
+		\Magento\Catalog\Model\ProductRepository $productRepository,
+		array $data = []
+	)
+	{
+		$this->_productRepository = $productRepository;
+		parent::__construct($context, $data);
+	}
+	
+	public function getProductById($id)
+	{
+		return $this->_productRepository->getById($id);
+	}
+	
+	public function getProductBySku($sku)
+	{
+		return $this->_productRepository->get($sku);
+	}
+}
+?>
+
+~~~~~~~~~~~~~~~~~~~
+Step 2: Get product id and sku in template file
+
+$id = YOUR_PRODUCT_ID;
+$sku = 'YOUR_PRODUCT_SKU';
+$_product = $block->getProductById($id);
+$_product = $block->getProductBySku($sku);
+echo $_product->getEntityId();
+echo '<br />';
+echo $_product->getName();
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+Using Object Manager
+
+$objectManager =  \Magento\Framework\App\ObjectManager::getInstance();        
+ 
+$appState = $objectManager->get('\Magento\Framework\App\State');
+$appState->setAreaCode('frontend');
+ 
+$productRepository = $objectManager->get('\Magento\Catalog\Model\ProductRepository');
+ 
+$id = 1; // YOUR PRODUCT ID;
+$sku = '24-MB01'; // YOUR PRODUCT SKU
+ 
+// get product by product id
+$product = $productRepository->getById($id); 
+ 
+// get product by product sku
+$product = $productRepository->get($sku);
+
+~~~~~~~~~~~~~~~~~~~~~~~
+or 
+
+$sku = "ABC";
+$objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+$product = $objectManager->get('Magento\Catalog\Model\Product')->loadByAttribute('sku',$sku);
+
+
+
+
+

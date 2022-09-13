@@ -1,0 +1,5 @@
+composer update m2epro/magento2-extension 
+
+composer update m2epro/magento2-extension --no-plugins 
+
+composer update m2epro/magento2-extension --no-plugins --ignore-platform-reqs

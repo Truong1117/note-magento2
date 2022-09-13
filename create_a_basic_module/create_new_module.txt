@@ -1,0 +1,88 @@
+https://www.mageplaza.com/magento-2-module-development/how-create-hello-world-module-magento-2.html
+
+Step 1: Create the folder of Hello World module
+app/code/Mageplaza/HelloWorld
+
+Step 2: Create etc/module.xml file.  
+app/code/Mageplaza/HelloWorld/etc/module.xml
+Contents would be:
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Module/etc/module.xsd">
+    <module name="Mageplaza_HelloWorld" setup_version="1.0.0">
+    </module>
+</config>
+
+Step 3: Create etc/registration.php file
+app/code/Mageplaza/HelloWorld/registration.php
+Contents would be:
+<?php
+\Magento\Framework\Component\ComponentRegistrar::register(
+	\Magento\Framework\Component\ComponentRegistrar::MODULE,
+	'Mageplaza_HelloWorld',
+	__DIR__
+);
+
+
+Step 4: Enable the module
+php bin/magento module:status
+php bin/magento module:enable Mageplaza_HelloWorld
+
+or other way, you can access the file:
+ app/etc/config.php
+
+You will see a long list of modules there, just add your module as well
+  ...
+  'Mageplaza_HelloWorld' => 1, 
+  ....
+
+  php bin/magento setup:upgrade
+
+php bin/magento setup:static-content:deploy
+
+Step 5: create a controller to test module.
+
+Before create a controller, we will create a route for HelloWorld module.
+
+Route’s in magento are divided into 3 parts: Route frontname, controller and action as following example:
+
+http://mageplaza.com/index.php/frontname/controller/action
+
+
+To add route, it is necessary to create routes.xml file
+
+app/code/Mageplaza/HelloWorld/etc/frontend/routes.xml
+
+Content would be:
+<?xml version="1.0" ?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:App/etc/routes.xsd">
+    <router id="standard">
+        <route frontName="helloworld" id="helloworld">
+            <module name="Mageplaza_HelloWorld"/>
+        </route>
+    </router>
+</config>
+
+app/code/Mageplaza/HelloWorld/Controller/Index/Test.php
+<?php
+namespace Mageplaza\HelloWorld\Controller\Index;
+
+class Test extends \Magento\Framework\App\Action\Action
+{
+	protected $_pageFactory;
+
+	public function __construct(
+		\Magento\Framework\App\Action\Context $context,
+		\Magento\Framework\View\Result\PageFactory $pageFactory)
+	{
+		$this->_pageFactory = $pageFactory;
+		return parent::__construct($context);
+	}
+
+	public function execute()
+	{
+		echo "Hello World";
+		exit;
+	}
+}
+
+After completed, please run php bin/magento cache:clean to clear cache and check result.

@@ -1,0 +1,4 @@
+In general, there will be 3 kinds of Default Port
+~ Port 25: Emails sent by other Protocol which different SSL will be sent through this portal
+~ Port 465: Emails sent by other Protocol SSL will be sent through this portal
+~ Port 578: Emails sent by other Protocol TLS will be sent through this portal

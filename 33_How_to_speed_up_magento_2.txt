@@ -1,0 +1,21 @@
+***
+How to Speed up Magento 2
+***
+~ Step 1: Optimize Server and System Requirements
+~ Step 2: Update latest version of Magento 2
+~ Step 3: Enable Varnish Cache
+~ Step 4: Configure Memcached
+~ Step 5: Enable Flat Categories and Products
+~ Step 6: Optimize Javascript and CSS
+~ Step 7: Setup Content Delivery Network
+~ Step 8: Use a good theme
+~ Step 9: Choose Extensions
+~ Step 10: Optimize Images
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Step 1: Optimize Server and System Requirements
+Server Requirements
+System Requirements
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Step 2: Update latest version of Magento 2

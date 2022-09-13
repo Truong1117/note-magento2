@@ -1,0 +1,5 @@
+https://github.com/kirchbergerknorr/magento2-module-tax-updater
+
+Admin Panel -> Stores -> Tax Zones and Rates
+
+Admin Panel ->System -> Import/Export Tax Rates

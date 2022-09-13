@@ -1,0 +1,95 @@
+Page configuration
+
+I. Page configuration file conventional location:
+
+Conventionally page configuration files must be located as follows:
+
+~ Module page configurations: <module_dir>/view/frontend/layout
+
+~ Theme page configurations: <theme_dir>/<Namespace>_<Module>/layout
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+II. Page configuration structure and allowed layout instructions
+
+The following table describes the instructions specific for page configuration files. For the descriptions of common layout 
+instructions see the Layout instructions article.
+
+ELEMENT					ATTRIBUTES			PARENT OF			DESCRIPTION
+<page></page>				layout = {layout}						Mandatory root element.
+		xsi:noNamespaceSchemaLocation ="{path_to_schema}"	<html>
+									<head>
+									<body>
+									<update>
+
+<html></html>				none				<attribute>
+
+<head></head>				none				<title>
+									<meta>
+									<link>
+									<css>
+									<font>
+									<script>
+									<remove>
+									<attribute>
+
+<body></body>				none				<block>
+									<container>
+									<move>
+									<attribute>	
+									<referenceBlock>
+									<referenceContainer>
+									<action>
+
+<attribute>				name = {arbitrary_name}
+					value = {arbitrary_value}	Specified for <html>, rendered like following:
+									<html name="value'>
+
+
+<title>					none				none				Page title
+<meta>
+
+content
+charset
+http-equiv
+name
+scheme
+none	
+<link>
+
+defer
+ie_condition
+charset
+hreflang
+media
+rel
+rev
+sizes
+src
+src_type
+target
+type
+none	 
+<css>	
+defer
+ie_condition
+charset
+hreflang
+media
+rel
+rev
+sizes
+src
+src_type
+target
+type
+none	
+<script>
+
+defer
+ie_condition
+async
+charset
+src
+src_type
+type
+none	

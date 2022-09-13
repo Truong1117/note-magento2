@@ -1,0 +1,2 @@
+https://www.magemonkeys.com/magento-2-update-cart-using-ajax-when-quantity-change/
+https://magento.stackexchange.com/questions/76304/update-shopping-cart-button-in-checkout-cart-does-not-update-the-quantity-when-c

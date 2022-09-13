@@ -1,0 +1,21 @@
+Step 1:
+Open the 
+app/design/frontend/Commercers/Training/Magento_Theme/layout/default_head_blocks.xml 
+file and insert the following code before the </head> tag.
+
+extends file: vendor/magento/module-theme/view/frontend/layout/default_head_blocks.xml
+
+<?xml version="1.0"?>
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" layout="2columns-left" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <head>
+        <css src="css/custom.css" cacheable="fasle" />
+    </head>
+</page>
+
+Step 2:
+The next step is to create custom.css file with your custom CSS styles and overrides in the 
+app/design/frontend/Commercers/Training/web/css folder.
+
+Step 3:
+
+Remember to clear magento cache.

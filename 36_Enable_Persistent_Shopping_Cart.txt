@@ -1,0 +1,54 @@
+How to Enable Persistent Shopping Cart in Magento 2
+
+~~~~~~~~~~~~~~~~~~~~~
+I. Reduce abandonment cart via the persistent cart
+~ Almost of online customers will never have a final decision to buy although they are interested in your 
+products. At that time, they will select the way to keep those items in their shopping cart. That is defined 
+as the persistent shopping cart. With the persistent shopping cart, the incomplete checkout will continue 
+without searching and interruption when the buyer come back.
+
+~ Especially, don’t care about what device is used to checkout, the persistent shopping cart follows the user 
+id and update exactly their carts. Therefore, regardless of the device as tablet or mobile, 
+the transactions are always on hold to enhance their shopping experience with this continuance.
+
+~~~~~~~~~~~~~~~~~~~~~~
+II. How to enable persistent cart in Magento 2
+
+To enable the persistent shopping cart in Magento 2 store, you need to do the following:
+
+~ Login to Magento 2 Admin, go to menu Stores -> Configuration -> Customers -> Persistent Shopping Cart.
+
+~ Leave the check box Use system value empty
+
+~ Choose “Yes” option for this field.
+
+~ Set the time for the updating of the persistent cookie in the Persistence Lifetime field. 
+The used default value is 31,536,000 seconds.
+
+~ Enable Remember Me to show a checkbox on Login page that allows saving the shopping cart information.
+
+~ It is optional if you want to set default option “Remember Me” once they login to your site.
+
+~ Set “No” option for Clear Persistence on Sign Out to ensure that all shopping cart information is saved.
+
+~ Then, click on Save to enable the persistent shopping cart function on the storefront.
+
+~ In the Persist Shopping Cart field, select “Yes” if you want to keep the persistent cookie when the session 
+cookie expires.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

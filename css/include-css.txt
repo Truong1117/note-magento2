@@ -1,0 +1,15 @@
+I. How Magento stylesheet files are organized
+
+~ In a theme directory, stylesheets are stored in the following locations:
+
+DIRECTORY, RELATIVE TO <THEME_DIR>			DESCRIPTION
+
+/<Namespace>_<Module>/web/css			Module-specific styles.
+
+/web/css					Contains the following:
+				print.less: used to generate styles for the printed version of store pages.
+				_styles.less - a composite file, which includes all Less files used in the theme. The underscore sign ("_") in a file name conventionally means that a file is not used independently, but is included in other files.
+				styles-m.less: used to generate mobile-specific styles, includes _styles.less.
+				styles-l.less: used to generate desktop-specific styles, includes _styles.less.
+				/source: this subdirectory contains Less configuration files that invoke mixins from the Magento UI library.
+				/source/_theme.less: overrides the default Magento UI library variables values.

@@ -1,0 +1,9 @@
+bin/magento setup:backup --db
+
+composer require msp/twofactorauth:3.0.0
+
+bin/magento s:up
+
+Go to backend.
+
+Stores->configuration->2FA

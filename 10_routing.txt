@@ -1,0 +1,83 @@
+***
+Routing
+***
+Table of contents
+~ Magento 2 request flow
+~ Create custom route on frontend/admin
+	~~ Frontend route
+		~~~ routes.xml
+	~~ Admin route
+~ Use route to rewrite controller
+
+~~~~~~~~~~~~~~~~~~~~~~~~
+1. Create custom route on frontend/admin
+1.1 Frontend route
+1.1.1 Routes.xml
+File: app/code/Mageplaza/HelloWorld/etc/frontend/routes.xml
+<?xml version="1.0" ?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:App/etc/routes.xsd">
+    <!--Use router 'standard' for frontend route-->
+    <router id="standard">
+        <!--Define a custom route with id and frontName-->
+        <route frontName="helloworld" id="helloworld">
+            <!--The module which this route match to-->
+            <module name="Mageplaza_HelloWorld"/>
+        </route>
+    </router>
+</config>
+~ The id attribute is a unique string which will identify this route. 
+You will use this string to declare the layout handle for the action of this module
+
+~ The frontName attribute is also a unique string which will be shown on the url request. 
+For example, if you declare a route like this:
+ <route frontName="helloworld" id="helloworld">
+The url to this module should be:
+http://example.com/index.php/helloworld/controller/action
+
+And the layout handle for this action is: helloworld_controller_action.xml 
+So with this example path, you must create the action class in this folder: {namespace}/{module}/Controller/{Controller}/{Action}.php
+
+~~~~~~~~~~~~~~~~~~~~~~~~~
+2. Admin route
+This route will be same as the frontend route but you must declare it in adminhtml folder with router id is admin.
+File: app/code/Mageplaza/HelloWorld/etc/adminhtml/routes.xml
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:App/etc/routes.xsd">
+    <!--Use router 'admin' for admin route -->
+    <router id="admin">
+        <!--Define a custom route with id and frontName -->
+        <route id="mageplaza_helloworld" frontName="mageplaza_helloworld">
+            <!--The module which this route match to-->
+            <module name="Mageplaza_HelloWorld"/>
+        </route>
+    </router>
+</config>
+The url of the admin page is the same structure with frontend page, but the admin_area name will be added before route_frontName to recognize this is a admin router. 
+For example, the url of admin cms page:
+http://example.com/index.php/admin/mageplaza_helloworld/controller/action
+
+The controller action for admin page will be added inside of the folder Controller/Adminhtml. For example for above url:
+{namespace}/{module}/Controller/Adminhtml/{Controller}/{Action}.php
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+3. Use route to rewrite controller
+For example, if we want to rewrite the controller customer/account/login, 
+we will define more route in the route.xml like this:
+File: app/code/Mageplaza/HelloWorld/etc/frontend/routes.xml
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:App/etc/routes.xsd">
+   <!--Use router 'standard' for frontend route-->
+   <router id="standard">
+        <!--Define a custom route with id and frontName-->
+        <route frontName="helloworld" id="helloworld">
+            <!--The module which this route match to-->
+            <module name="Mageplaza_HelloWorld"/>
+        </route>
+       <route id="customer">
+           <module name="Mageplaza_HelloWorld" before="Magento_Customer" />
+       </route>
+   </router>
+</config>
+
+And the controller file: app/code/Mageplaza/HelloWorld/Controller/Account/Login.php
+

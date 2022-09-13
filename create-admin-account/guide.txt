@@ -1,0 +1,1 @@
+php bin/magento admin:user:create --admin-user=truongdong --admin-password=@Nt1h4ck --admin-email=truongdong@commercers.com; --admin-firstname=Dong --admin-lastname=Truong

@@ -1,0 +1,188 @@
+Magento UI library
+
+I. Components provided by the UI library
+The Magento UI library provides the ability to customize and reuse the following user 
+interface elements and properties:
+	~ actions-toolbar
+	~ breadcrumbs
+	~ buttons
+	~ drop-downs
+	~ forms
+	~ icons
+	~ layout
+	~ loaders
+	~ messages
+	~ pagination
+	~ popups
+	~ ratings
+	~ sections - tabs and accordions
+	~ tables
+	~ tooltips
+	~ typography
+	~ list of theme variables
+
+~ The following illustration shows a storefront product page containing some of the preceding elements:
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+II. Mixin location
+~ You can find the Magento UI library under lib/web/css. Library source .less files are stored under 
+the source directory, each file contains mixins for configuring a certain element, and in most cases 
+the element coincides with the file name:
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+III. Predefined variables
+
+~ Please mind, that your <theme_dir>/web/css/source/_theme.less file overrides _theme.less of the parent 
+theme (if your theme has a parent). So if you want to inherit the parent theme’s variable values additionally 
+to your changes, add the content of parent’s _theme.less to your file as well.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+IV. Your custom variables
+https://devdocs.magento.com/guides/v2.4/coding-standards/code-standard-less.html#naming
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+V. Using mixins
+~ You can use a mixin with default variables values, or you can redefine them when calling a mixin. 
+The following paragraphs describe both ways to call a mixin.
+
+~ To use a mixin with default values, call the mixin without specifying any parameters. For example:
+
+.breadcrumbs {
+    .lib-breadcrumbs();
+}
+
+~ To call a mixin with parameter values different from default, set these values when calling the mixin, 
+like in the following example:
+
+.example-button {
+    .lib-button(
+        @_button-padding: @button-padding,
+        @_button-color: #fff,
+        @_button-color-hover: #ccc
+    );
+}
+
+~ Variables starting with @_ are private mixin variables used only in this mixin. 
+Variables starting with @ (without the underscore) are global, and are listed in 
+lib/web/css/source/lib/variables.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+VI. Tabs and accordions set with CSS
+
+Use the accordion style for mobile and tab style for desktop.
+
+To set tabs and accordions using breakpoints, see the following example:
+
+//
+//  Mobile + Desktop
+//  _____________________________________________
+
+& when (@media-common = true) {
+    .product.data.items {
+        .lib-data-accordion();
+    }
+}
+
+//
+//  Desktop
+//  _____________________________________________
+
+.media-width(@extremum, @break) when (@extremum = 'min') and (@break = @screen__m) {
+    .product.data.items {
+        .lib-data-tabs();
+    }
+}
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+VII. Navigation set with CSS
+
+~ Use the Navigation style for mobile and tab style for desktop.
+
+~ To set navigation using breakpoints, see the following example:
+
+//
+//  Mobile
+//  _____________________________________________
+
+.media-width(@extremum, @break) when (@extremum = 'max') and (@break = @screen__m) {
+    .lib-main-navigation();
+}
+
+//
+//  Desktop
+//  _____________________________________________
+
+.media-width(@extremum, @break) when (@extremum = 'min') and (@break = @screen__m) {
+    .lib-main-navigation-desktop();
+}
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+VIII. Tooltip element
+
+To create a tooltip element, use the .lib-tooltip() mixin.
+
+OPTION						DEFAULT
+
+position				top
+selector-toggle				.tooltip-toggle
+selector-content			.tooltip-content
+
+<span class="my-tooltip">
+    <a href="#" class="tooltip-toggle">Hover me</a>
+    <span class="tooltip-content">Details here</span>
+</span>
+
+.my-tooltip {
+    .lib-tooltip(right);
+}
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+IX. Embedded documentation
+
+~ The detailed information about the Magento UI library is embedded in the code repository:
+
+	~~ lib/web/css/docs/source/README.md describes the Magento UI library structure, 
+naming conventions, and code style.
+
+	~~ lib/web/css/docs contains a set of .html files with detailed information about the library mixins.
+
+~ Each file is named after the mixin it describes, and contains detailed mixin description and navigation
+controls to access documentation for other mixins. The generated Magento UI library documentation is provided 
+in a convenient HTML view. It is available in the following location in your Magento installation: 
+<your_Magento_instance>/pub/static/frontend/Magento/blank/en_US/css/docs/index.html (view in a browser).
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,13 @@
+https://magento.stackexchange.com/questions/216626/grouped-product-cant-add-any-item-to-cart-if-any-other-item-is-out-of-stock
+
+
+I just added my own grouped.phtml in /app/design/frontend/<Vendor>/<Theme>/Magento_GroupedProduct/templates/product/view/type and copied the entire phtml file from the Magento core, with just the addition of a hidden field in the out of stock condition:
+
+<div class="stock unavailable" title="<?= /* @escapeNotVerified */ __('Availability') ?>">
+    <span><?= /* @escapeNotVerified */ __('Out of stock') ?></span>
+    <?php /** added in the qty of 0 as a hidden field */ ?>
+    <input type="hidden" name="super_group[<?= /* @escapeNotVerified */ $_item->getId() ?>]" 
+            data-selector="super_group[<?= /* @escapeNotVerified */ $_item->getId() ?>]" value="0" 
+            title="<?= /* @escapeNotVerified */ __('Qty') ?>"
+            class="input-hidden qty"/>
+</div>

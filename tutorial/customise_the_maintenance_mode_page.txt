@@ -1,0 +1,11 @@
+/var/www/html/m2_truongdong/pub/errors/	
+Copy file:
+ cp -R default/ fancyssh/
+
+bin/magento maintenance:enable
+bin/magento maintenance:disable
+
+file: 
+/var/www/html/m2_truongdong/pub/errors/fancy
+
+503.phtml

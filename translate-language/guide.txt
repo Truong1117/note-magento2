@@ -1,0 +1,21 @@
+M1:
+$this -> __(' --- ')
+
+<?= $this->__("...%s...",$a) ?>
+
+$helper = Mage::helper("__")
+
+$helper->__("__")
+
+app/locale/de_DE/Commercers_Course
+
+
+M2:
+
+echo __ ("__");
+
+app/i18n/de_DE.csv
+
+<p><?= __("Next")?></p>
+
+https://store.magenest.com/blog/javascript-translation-magento-2/

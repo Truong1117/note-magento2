@@ -1,0 +1,186 @@
+link: https://www.codextblog.com/code-snippet/magento-2-run-sql-query-using-model/
+
+Magento 2 – Run SQL Query Using Model
+
+~~~~~~~~~~~~~~
+I. Select, Insert, Update and Delete operations
+
+1. Select query
+<?php
+$testquery = $objectManager->create('Codextblog\Test\Model\Test');
+$collection = $testquery->getCollection();
+ 
+/*
+SELECT `main_table`.* FROM `test` AS `main_table`
+*/
+~~~~~~~~~~~~~~~
+2. Insert query
+<?php
+$data = array('product_id'=>24,'name'=>'Addidas Backpack','is_active'=>'1');
+$testquery= $objectManager->create('Codextblog\Test\Model\Test');
+$testquery->setData($data);
+$testquery->save();
+
+~~~~~~~~~~~~~~~
+3.Update query
+<?php
+$data = array('product_id'=>24,'name'=>'Black Addidas Backpack','is_active'=>'1');
+$id = 5;
+$testquery= $objectManager->create('Codextblog\Test\Model\Test')->load($id);
+$testquery->addData($data);
+$testquery->setId($id)->save();
+
+~~~~~~~~~~~~~~~
+4. Delete query
+
+<?php
+$id = 5;
+$testquery = $objectManager->create('Codextblog\Test\Model\Test')->setId($id)->delete();
+
+~~~~~~~~~~~~~~~
+II. Where Clause
+
+1. eqaul to
+
+$testquery = $objectManager->create('Codextblog\Test\Model\Test')
+             ->getCollection()
+             ->addFieldToFilter('is_active',1);
+);
+ 
+/*
+SELECT `main_table`.* FROM `test` AS `main_table` WHERE (`is_active` = 1)
+*/
+
+~~~~~~~~~~~~~~
+2. not eqaul to
+
+$testquery = $objectManager->create('Codextblog\Test\Model\Test')
+             ->getCollection()
+             ->addFieldToFilter('is_active',array('neq' => 1);
+);
+ 
+/*
+SELECT `main_table`.* FROM `test` AS `main_table` WHERE (`is_active` != 1)
+*/
+
+~~~~~~~~~~~~~~~~~~~~
+3. LIKE
+
+$testquery = $objectManager->create('Codextblog\Test\Model\Test')
+             ->getCollection()
+             ->addFieldToFilter('name',array('like' => '%Bag%'));
+);
+/*
+SELECT `main_table`.* FROM `test` AS `main_table` WHERE (`name` LIKE '%Bag%')
+*/
+
+~~~~~~~~~~~~~~~~~
+4. IN
+$testquery = $objectManager->create('Codextblog\Test\Model\Test')
+             ->getCollection()
+             ->addFieldToFilter('product_id',array('in' => array('24','25')));
+);
+/*
+SELECT `main_table`.* FROM `test` AS `main_table` WHERE (`id` IN('24','25'))
+*/
+
+~~~~~~~~~~~~~~~~~
+III. ORDER By
+
+1.ORDER BY ASCENDING
+
+<?php
+$testquery = $objectManager->create('Codextblog\Test\Model\Test')
+             ->getCollection()
+             ->addFieldToFilter('is_active',1);
+$testquery->getSelect()
+          ->order('product_id');
+ 
+/*
+SELECT `main_table`.* FROM `test` AS `main_table` WHERE (`is_active` = 1) ORDER BY `product_id` ASC
+*/
+
+~~~~~~~~~~~~~~~~
+2. ORDER BY DESCENDING
+
+<?php
+$testquery = $objectManager->create('Codextblog\Test\Model\Test')
+             ->getCollection()
+             ->addFieldToFilter('is_active',1);
+$testquery->getSelect()
+          ->order('product_id' .' '. \Magento\Framework\DB\Select::SQL_DESC);
+ 
+/*
+SELECT `main_table`.* FROM `test` AS `main_table` WHERE (`is_active` = 1) ORDER BY `product_id` DESC
+*/
+
+~~~~~~~~~~~~~~~~
+IV. GROUP By
+<?php
+$testquery = $objectManager->create('Codextblog\Test\Model\Test')
+             ->getCollection()
+             ->addFieldToFilter('is_active',1);
+$testquery->getSelect()
+          ->group('product_id');
+ 
+/*
+SELECT `main_table`.* FROM `test` AS `main_table` WHERE (`is_active` = 1) GROUP BY `product_id`
+*/
+
+~~~~~~~~~~~~~~~~~
+V. JOINS
+
+1. Inner Join
+
+<?php
+$testquery= $objectManager->create('Codextblog\Test\Model\Test')->getCollection();
+$testquery ->getSelect()
+           ->join('sales_order_item as item','main_table.product_id = item.product_id',array('*'));
+ 
+/*
+SELECT `main_table`.*, `item`.* FROM `test` AS `main_table` JOIN `sales_flat_order_item` AS `item` ON main_table.product_id = item.product_id
+*/
+
+~~~~~~~~~~~~~~~~
+2. Left Join
+
+<?php
+$testquery= $objectManager->create('Codextblog\Test\Model\Test')->getCollection();
+$testquery ->getSelect()
+           ->joinLeft('sales_order_item as item','main_table.product_id = item.product_id',array('*'));
+ 
+/*
+SELECT `main_table`.*, `item`.* FROM `test` AS `main_table` LEFT JOIN `sales_flat_order_item` AS `item` ON main_table.product_id = item.product_id
+*/
+
+~~~~~~~~~~~~~~~~~
+3. Right Join
+
+<?php
+$testquery= $objectManager->create('Codextblog\Test\Model\Test')->getCollection();
+$testquery ->getSelect()
+           ->joinRight('sales_order_item as item','main_table.product_id = item.product_id',array('*'));
+ 
+/*
+SELECT `main_table`.*, `item`.* FROM `test` AS `main_table` RIGHT JOIN `sales_flat_order_item` AS `item` ON main_table.product_id = item.product_id
+*/
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

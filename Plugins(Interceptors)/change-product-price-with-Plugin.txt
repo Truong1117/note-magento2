@@ -1,0 +1,63 @@
+How to change product price with Plugin in Magento 2
+
+Using a plugin to change the product price in Magento 2 is one of the great alternative choices 
+when you start with Magento 2 store, and have a tendency to change something like product price.
+
+~~~~~~~~~~~~~~~~~~~~
+Overview of changing product price with plugin in Magento 2
+
+~ Step 1: Add di.xml file
+
+~ Step 2: Change the product price
+
+~ Step 3: Flush Cache and Test
+
+~~~~~~~~~~~~~
+Step 1: Add di.xml file
+
+~ It is crucial to identify where the place you want to activate the plugin, and then add di.xml file. 
+Here, the sample is the frontend area with the following content for the di.xml file.
+
+<config>
+  <type name="Magento\Catalog\Model\Product">
+    <plugin name="change_product" type=" Commercers\Ticket\Plugin\Catalog\Model\Product " sortOrder="1" disabled="true"/>
+  </type>
+</config>
+
+~~~~~~~~~~~~~
+Step 2: Change the product price
+
+Open folder “Commercers\Ticket\Plugin\Catalog\Model” to add new class Product.php. 
+Please put the prefix “after” before one of two ways to change the product price:
+
+~ Edit the values reported by an original method
+
+~ Call some behaviors once an original method is called.
+
+And the result when the original method getPrice() finishes is declared by the $result. 
+For example, you will adjust the product price by multiply it with 2.
+
+<?php
+ 
+namespace Mageplaza\HelloWorld\Plugin;
+ 
+class Product
+{
+    public function afterGetPrice(\Magento\Catalog\Model\Product $subject, $result)
+    {
+        return $result + 100;
+    }
+}
+
+When step 2 has done, this means you can see the customization of the product price on the frontend. 
+Hope you find it useful within running Magento 2 store.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+Step 3: Flush Cache and Test
+
+Flush cache and test the result: bin/magento c:c
+
+
+
+
+

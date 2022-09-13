@@ -1,0 +1,236 @@
+I. referenceBlock and referenceContainer
+
+~ The remove attribute is optional and its default value is false.
+
+This implementation allows you to remove a block or container in your layout by setting the remove attribute value to true, 
+or to cancel the removal of a block or container by setting the value to false.
+
+<referenceBlock name="block.name" remove="true" />
+
+~ The display attribute is optional and its default value is true.
+
+You are always able to overwrite this value in your layout. In situation when remove value is true, the display attribute is ignored.
+
+<referenceContainer name="container.name" display="false" />
+https://devdocs.magento.com/guides/v2.4/frontend-dev-guide/layouts/xml-instructions.html
+~~~~~~~~~~~~~~~~~~~~
+II. move
+
+Sets the declared block or container element as a child of another element in the specified order.
+
+<move element="name.of.an.element" destination="name.of.destination.element" as="new_alias" after="name.of.element.after" before="name.of.element.before"/>
+
+~ <move> is skipped if the element to be moved is not defined.
+
+~ If the as attribute is not defined, the current value of the element alias is used. If that is not possible, the value of the name attribute is used instead.
+
+~ During layout generation, the <move> instruction is processed before the removal (set using the remove attribute). 
+This means if any elements are moved to the element scheduled for removal, they will be removed as well.
+
+ATTRIBUTE			DESCRIPTION						VALUES			REQUIRED?
+element			Name of the element to move.					Element name		yes
+
+destination		Name of the target parent element.				Element name		yes
+
+as			Alias name for the element in the new location.			0-9, A-Z, a-z, 
+											underscore (_), 
+											period (.), dash (-). 
+											Case-sensitive.		no
+
+after or before		Specifies the element’s position relative to siblings. 		Element name		no
+			Use dash (-) to position the block before or after all other 
+			siblings of its level of nesting. If the attribute is omitted, 
+			the element is placed after all siblings.	
+
+~~~~~~~~~~~~~~~
+III. Remove
+
+<remove> is used only to remove the static resources linked in a page <head> section. For removing blocks or containers, 
+use the remove attribute for <referenceBlock> and <referenceContainer>.
+
+
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+   <head>
+      <!-- Remove local resources -->
+      <remove src="css/styles-m.css" />
+      <remove src="my-js.js"/>
+      <remove src="Magento_Catalog::js/compare.js" />
+
+      <!-- Remove external resources -->
+      <remove src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap-theme.min.css"/>
+      <remove src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"/>
+      <remove src="http://fonts.googleapis.com/css?family=Montserrat" />
+   </head>
+</page>
+
+
+~~~~~~~~~~~~~~
+IV. Update
+
+Includes a certain layout file.
+
+<update handle="{name_of_handle_to_include}"/>
+
+The specified handle is “included” and executed recursively.
+
+~~~~~~~~~~~~~~~
+V. Argument
+
+NOTE: Magento 2.3.2 added the shared attribute. Now, instances of the view models are shared by default. 
+If a view model is required to be a new instance each time, you must add the attribute shared="false" on the argument node in the layout 
+xml file.
+
+Used to pass an argument. Must be always enclosed in <arguments>.
+
+ATTRIBUTE			DESCRIPTION						VALUES			REQUIRED?
+name				Argument name.						unique			yes
+
+shared				If false, creates a new instance of the block.		false			no
+
+translate	 									true or false		no
+xsi:type			Argument type.						string, boolean, 
+											object, number, null, 
+											array, options, url,
+											helper			yes
+
+~ To pass multiple arguments use the following construction:
+
+<arguments>
+   <argument name="item1" xsi:type="string">Custom string</argument>
+   <argument name="item2" xsi:type="boolean">true</argument>
+   ...
+</arguments>
+
+~ Arguments values set in a layout file can be accessed in templates using the getData('{ArgumentName}') and hasData('{ArgumentName}') 
+methods. The latter returns a boolean defining whether there’s any value set. {ArgumentName} is obtained from the name attribute the following
+way: for getting the value of <argument name="some_string"> the method name is getData('some_string').
+
+Example:
+
+Setting a value of css_class in the [app/code/Magento/Theme/view/frontend/layout/default.xml] layout file:
+
+<arguments>
+    <argument name="css_class" xsi:type="string">header links</argument>
+</arguments>
+
+Using the value of css_class in [app/code/Magento/Theme/view/frontend/templates/html/title.phtml]:
+
+$cssClass = $this->hasCssClass() ? ' ' . $this->getCssClass() : '';
+
+~~~~~~~~~~~~~~
+1. Argument types examples
+
+As was described above the argument attribute can be added with different types. There are examples of all argument types.
+
+~ The string type:
+
+<argument name="some_string" xsi:type="string">Some String</argument>
+
+~ The boolean type:
+
+<argument name="is_active" xsi:type="boolean">true</argument>
+
+~ The object type:
+
+<argument name="viewModel" xsi:type="object">Vendor\CustomModule\ViewModel\Class</argument>
+
+The Vendor\CustomModule\ViewModel\Class class should implement the \Magento\Framework\View\Element\Block\ArgumentInterface interface.
+
+~ The number type:
+
+<argument name="some_number" xsi:type="number">100</argument>
+
+~ The null type:
+
+<argument name="null_value" xsi:type="null" />
+
+~ The array type:
+
+<argument name="custom_array" xsi:type="array">
+   <item name="array_key_one" xsi:type="string">First Item</item>
+   <item name="array_key_two" xsi:type="string">Second Item</item>
+   ...
+</argument>
+
+~ The options type:
+
+<argument name="options" xsi:type="options">Vendor\CustomModule\Source\Options\Class</argument>
+
+* The Vendor\CustomModule\Source\Options\Class class should implement the \Magento\Framework\Data\OptionSourceInterface interface.
+
+~ The url type:
+
+<argument name="shopping_cart_url" xsi:type="url" path="checkout/cart/index" >
+    <param name="param1">param1value</param>
+    <param name="param2">param2value</param>
+    ...
+</argument>
+
+The url may have parameters, but they are optional.
+
+~ The helper type:
+
+<argument name="helper_method_result" xsi:type="helper" helper="Vendor\CustomModule\Helper\Class::someMethod">
+  <param name="firstParam">firstValue</param>
+  <param name="secondParam">secondValue</param>
+    ...
+</argument>
+
+The helper can use only public methods. In this example the someMethod() method should be public. The argument with helper type 
+can contain param items which can be passed as a helper method parameters.
+
+* Obtain arguments examples in template:
+
+These argument examples can be taken in the template by getData method. Another way to take these arguments is using the magic method
+get followed by the name of argument in CamelCase format. Here is an example to retrieve the arguments from above example:
+
+<?php
+/** @var \Magento\Framework\View\Element\Template $block */
+
+/** @var string $someString */
+$someString = $block->getData('some_string'); //or $block->getSomeString()
+
+/** @var bool $isActive */
+$isActive = $block->getData('is_active'); //or $block->getIsActive()
+
+/** @var Vendor\CustomModule\ViewModel\Class|\Magento\Framework\View\Element\Block\ArgumentInterface $viewModel */
+$viewModel = $block->getData('viewModel'); //or $block->getViewModel()
+
+/** @var string|int|float $someNumber */
+$someNumber = $block->getData('some_number'); //or $block->getSomeNumber()
+
+/** @var null $nullValue */
+$nullValue = $block->getData('null_value'); //or $block->getNullValue()
+
+/** @var array $customArray */
+$customArray = $block->getData('custom_array'); //or $block->getCustomArray()
+
+/** @var array $options */
+$options = $block->getData('options'); //or $block->getoptions()
+
+/** @var string $shoppingCartUrl */
+$shoppingCartUrl = $block->getData('shopping_cart_url'); //or $block->getShoppingCartUrl()
+
+/** @var mixed $helperMethodResult */
+$helperMethodResult = $block->getData('helper_method_result'); // or $block->getHelperMethodResult()
+
+~~~~~~~~~~~~~~~~~~~~~
+arguments
+
+<arguments> is a required container for <argument>. It does not have its own attributes.
+
+<arguments>
+    <argument name="css_class" xsi:type="string">header links</argument>
+</arguments>
+
+
+
+
+
+
+
+
+
+
+
+

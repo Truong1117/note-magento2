@@ -1,0 +1,73 @@
+***********
+Create a controller 
+***********
+Step 1: Create routes.xml file
+Step 2: Create controller file
+Step 3: Create controller Layout file
+Step 4: Create controller Block file
+Step 5: Create controller template file
+Step 6: Flush Magento cache
+Step 7: Run a test new controller
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Step 1: Create routes.xml file.
+File: app/code/Mageplaza/HelloWorld/etc/frontend/routes.xml
+<?xml version="1.0" ?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:App/etc/routes.xsd">
+    <router id="standard">
+        <route frontName="helloworld" id="helloworld">
+            <module name="Mageplaza_HelloWorld"/>
+        </route>
+    </router>
+</config>
+
+Step 2: Create controller file
+File: app/code/Mageplaza/HelloWorld/Controller/Index/Index.php
+<?php
+namespace Mageplaza\HelloWorld\Controller\Index;
+
+class Index extends \Magento\Framework\App\Action\Action
+{
+	protected $_pageFactory;
+
+	public function __construct(
+		\Magento\Framework\App\Action\Context $context,
+		\Magento\Framework\View\Result\PageFactory $pageFactory)
+	{
+		$this->_pageFactory = $pageFactory;
+		return parent::__construct($context);
+	}
+
+	public function execute()
+	{
+		return $this->_pageFactory->create();
+	}
+}
+
+Step 3: Create Layout file
+File: app/code/Mageplaza/HelloWorld/view/frontend/layout/helloworld_index_index.xml
+<?xml version="1.0"?>
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" layout="1column" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <referenceContainer name="content">
+        <block class="Mageplaza\HelloWorld\Block\Index" name="helloworld_index_index" template="Mageplaza_HelloWorld::index.phtml" />
+    </referenceContainer>
+</page>
+
+Step 4: Create Block file
+File: app/code/Mageplaza/HelloWorld/Block/Index.php
+<?php
+namespace Mageplaza\HelloWorld\Block;
+class Index extends \Magento\Framework\View\Element\Template
+{
+
+}
+
+Step 5: Create template file
+File: app/code/Mageplaza/HelloWorld/view/frontend/templates/index.phtml
+<h2>Welcome to Mageplaza.com</h2>
+
+Step 6: Flush Magento cache
+php bin/magento cache:clean
+
+Step 7: Run a test
+http://m2-truongdong.local/helloworld/index/index

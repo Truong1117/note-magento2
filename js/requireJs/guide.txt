@@ -1,0 +1,84 @@
+I. RequireJS configuration in Magento
+
+var config = {
+    'map': {...},
+    'paths': {...},
+    'deps':[...],
+    'shim': {...},
+    'config': {
+        'mixins': {...},
+        'text': {...}
+    }
+}
+
+~~~~~~~~~~~
+1. map
+
+The map configuration maps (connects) any real AMD modules that calls define(), to the specified alias. 
+In the snippet below, * means all loaded RequireJS modules can use the specified alias.
+
+map: {
+    '*': {
+        alias: 'Vendor_Module/js/complex/path/amd-module'
+    }
+}
+
+Now we can use our Vendor_Module/js/complex/path/module using alias in any RequireJS module or config file without needing to type 
+the entire path. For example, in Magento, catalogAddToCart is mapped to Magento_Catalog/js/catalog-add-to-cart and can be used anywhere 
+as a RequireJS module name.
+
+map: {
+    '*': {
+        catalogAddToCart: 'Magento_Catalog/js/catalog-add-to-cart'
+    }
+}
+
+~~~~~~~~~~
+2. paths
+
+The paths configuration, similar to map, is used for aliasing not just any real AMD module that calls define(), 
+but also any JS file (even from a URL), HTML templates, etc. Magento uses this to alias URLs and third party libraries.
+
+paths: {
+    'alias': 'library/file',
+    'another-alias': 'https://some-library.com/file'
+}
+
+~~~~~~~~~
+3. deps
+
+The deps configuration is used to add a dependency. It can either be used directly under var config = {} or under a shim configuration. 
+Adding modules under an independent deps configuration will load the specified modules in all pages.
+
+In this snippet, the custom Vendor_Module/js/module will be loaded in all pages.
+
+deps: ['Vendor_Module/js/module']
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,25 @@
+    // protected function _initSelect()
+    // {
+    //     parent::_initSelect();
+    //     $tableDescription = $this->getConnection()->describeTable($this->getMainTable());
+    //     foreach ($tableDescription as $columnInfo) {
+    //         $this->addFilterToMap($columnInfo['COLUMN_NAME'], 'main_table.' . $columnInfo['COLUMN_NAME']);
+    //         $this->addFieldToFilter('store_id',array('eq'=>self::LANDING_STORE_ID));
+    //     }
+    //     return $this;
+    // }
+
+
+    protected function _renderFiltersBefore()
+	{
+		$joinTable = $this->getTable('sales_invoice_grid');
+		$this->getSelect()
+		     ->joinLeft(
+				$joinTable.' as cgf',
+				'main_table.entity_id = cgf.order_id',
+				['invoices' => 'cgf.increment_id']
+			)
+			->where('main_table.store_id = ' . self::LANDING_STORE_ID)
+		;
+		parent::_renderFiltersBefore();
+	}

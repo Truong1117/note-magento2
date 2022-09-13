@@ -1,0 +1,65 @@
+app/code/Commercers/PriceProduct/Helper/Data.php
+
+https://aureatelabs.com/magento-2/how-to-call-the-helper-method-in-phtml-template-file/
+~~~~~~~~~~~~~~~~~~~~~~~~~
+<?php
+/**
+ * Created by PhpStorm.
+ * User: niken
+ * Date: 9/24/18
+ * Time: 21:14
+ */
+namespace Commercers\PriceProduct\Helper;
+use Magento\Framework\App\Helper\AbstractHelper;
+use Magento\Framework\App\Helper\Context;
+use Magento\Catalog\Model\ProductFactory;
+use Magento\Store\Model\StoreManagerInterface;
+use Magento\Framework\App\ResourceConnection;
+class Data extends AbstractHelper {
+
+    /**
+     * @var StoreManagerInterface
+     */
+    protected $_storeManager;
+
+    /**
+     * @var ProductFactory
+     */
+    protected $_productFactory;
+
+    /**
+     * @var ResourceConnection
+     */
+
+    protected $_resource;
+
+    public function __construct(
+        Context $context,
+        ProductFactory $productFactory,
+        ResourceConnection $resource
+    ) {
+        $this->_productFactory = $productFactory;
+        $this->_resource = $resource;
+        parent::__construct($context);
+    }
+
+    public function getService($productId = null){
+
+        // TODO recheck attribute option label per store
+
+        $storeId = $this->_storeManager->getStore()->getId();
+
+        $productFactory = $this->_productFactory->create()->load($productId);
+
+        $connection = $this->_resource->getConnection();
+        $tableName = $this->_resource->getTableName('eav_attribute_option_value');
+
+        $optionId = $productFactory->getData('uebersicht_seite_preis_label');
+        $sql = "SELECT * FROM " . $tableName . " WHERE option_id = ".$optionId.' AND store_id = 0';
+        $result = $connection->fetchAll($sql);
+
+        return $result[0]['value'];
+    }
+
+
+}

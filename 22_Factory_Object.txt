@@ -1,0 +1,35 @@
+***
+Magento 2 Factory Object
+***
+ You will see the factory class in
+var/generation/<vendor_name>/<module_name>/Model/ClassFactory.php
+
+For example, we will call the model to get data in Block. We will create a Topic block:
+Mageplaza\HelloWorld\Block\Topic.php
+
+<?php
+namespace Mageplaza\HelloWorld\Block;
+class Topic extends \Magento\Framework\View\Element\Template
+{
+	protected $_topicFactory;
+	public function _construct(
+		\Magento\Framework\View\Element\Template\Context $context,
+		\Mageplaza\HelloWorld\Model\TopicFactory $topicFactory
+	){
+		$this->_topicFactory = $topicFactory;
+		parent::_construct($context);
+	}
+
+	public function _prepareLayout()
+	{
+		$topic = $this->_topicFactory->create();
+		$collection = $topic->getCollection();
+		foreach($collection as $item){
+			var_dump($item->getData());
+		}
+		exit;
+	}
+}
+As you see in this block, the TopicFactory object will be created in the _construct() function. 
+In the _prepareLayout() function, we use $topic = $this->_topicFactory->create(); to create the model object.
+

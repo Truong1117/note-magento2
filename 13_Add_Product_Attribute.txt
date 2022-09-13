@@ -1,0 +1,110 @@
+***
+Overview of Adding Product Attribute Programmatically
+***
+~ Step 1: Create file InstallData.php
+~ Step 2: Define the install() method
+~ Step 3: Create custom attribute
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Step 1: Create file InstallData.php
+app/code/Mageplaza/HelloWorld/Setup/InstallData.php. The content for this file:
+<?php
+namespace Mageplaza\HelloWorld\Setup;
+
+use Magento\Eav\Setup\EavSetup;
+use Magento\Eav\Setup\EavSetupFactory;
+use Magento\Framework\Setup\InstallDataInterface;
+use Magento\Framework\Setup\ModuleContextInterface;
+use Magento\Framework\Setup\ModuleDataSetupInterface;
+
+class InstallData implements InstallDataInterface
+{
+	private $eavSetupFactory;
+
+	public function __construct(EavSetupFactory $eavSetupFactory)
+	{
+		$this->eavSetupFactory = $eavSetupFactory;
+	}
+	
+}
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Step 2: Define the install() method
+<?php
+	
+public function install(ModuleDataSetupInterface $setup, ModuleContextInterface $context)
+{
+	
+}
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Step 3: Create custom attribute
+Here are all lines code of InstallData.php to create product attribute programmically.
+<?php
+namespace Mageplaza\HelloWorld\Setup;
+
+use Magento\Eav\Setup\EavSetup;
+use Magento\Eav\Setup\EavSetupFactory;
+use Magento\Framework\Setup\InstallDataInterface;
+use Magento\Framework\Setup\ModuleContextInterface;
+use Magento\Framework\Setup\ModuleDataSetupInterface;
+
+class InstallData implements InstallDataInterface
+{
+	private $eavSetupFactory;
+
+	public function __construct(EavSetupFactory $eavSetupFactory)
+	{
+		$this->eavSetupFactory = $eavSetupFactory;
+	}
+	
+	public function install(ModuleDataSetupInterface $setup, ModuleContextInterface $context)
+	{
+		$eavSetup = $this->eavSetupFactory->create(['setup' => $setup]);
+		$eavSetup->addAttribute(
+			\Magento\Catalog\Model\Product::ENTITY,
+			'sample_attribute',
+			[
+				'type' => 'text',
+				'backend' => '',
+				'frontend' => '',
+				'label' => 'Sample Atrribute',
+				'input' => 'text',
+				'class' => '',
+				'source' => '',
+				'global' => \Magento\Eav\Model\Entity\Attribute\ScopedAttributeInterface::SCOPE_GLOBAL,
+				'visible' => true,
+				'required' => true,
+				'user_defined' => false,
+				'default' => '',
+				'searchable' => false,
+				'filterable' => false,
+				'comparable' => false,
+				'visible_on_front' => false,
+				'used_in_product_listing' => true,
+				'unique' => false,
+				'apply_to' => ''
+			]
+		);
+	}
+}
+
+As you can see, all the addAttribute method requires is:
+~ The type id of the entity which we want to add attribute
+~ The name of the attribute
+~ An array of key value pairs to define the attribute such as group, input type, source, label…
+
+Run: 
+~ php bin/magento setup:upgrade to
+~ php bin/magento setup:static-content:deploy
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Remove Product Attribute:
+public function install(ModuleDataSetupInterface $setup, ModuleContextInterface $context)
+{
+	$eavSetup = $this->eavSetupFactory->create(['setup' => $setup]);
+	$eavSetup->removeAttribute(
+		\Magento\Catalog\Model\Product::ENTITY,
+		'sample_attribute');
+}
+

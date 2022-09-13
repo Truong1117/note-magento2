@@ -1,0 +1,5 @@
+display: flex
+flex-wrap:wrap
+
+chi tac dung len child cap thu 1
+

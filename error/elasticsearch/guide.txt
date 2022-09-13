@@ -1,0 +1,4 @@
+Run:
+
+./bin/elasticsearch -d -p pid
+netstat -tulpn | grep LISTEN

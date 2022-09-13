@@ -1,0 +1,9 @@
+Stores->Configuration
+
+Customers-> Customer Configuration
+
+Password Options:
+
+~ Maximum Login Failures to Lockout Account: 
+
+~ Lockout Time (minutes): 

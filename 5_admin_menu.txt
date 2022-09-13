@@ -1,0 +1,68 @@
+*****
+Create Admin Menu
+*****
+Step 1: Create menu.xml
+Step 2: Add Admin menu item
+Step 3: Flush Magento cache
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Step 1: Create menu.xml
+app/code/Mageplaza/HelloWorld/etc/adminhtml/menu.xml
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Backend:etc/menu.xsd">
+    <menu>
+    </menu>
+</config>
+
+Step 2: Add admin menu item
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Backend:etc/menu.xsd">
+    <menu>
+        <add id="Mageplaza_HelloWorld::helloworld" title="Hello World" module="Mageplaza_HelloWorld" sortOrder="51" resource="Mageplaza_HelloWorld::helloworld"/>
+        <add id="Mageplaza_HelloWorld::post" title="Manage Posts" module="Mageplaza_HelloWorld" sortOrder="10" action="mageplaza_helloworld/post" resource="Mageplaza_HelloWorld::post" parent="Mageplaza_HelloWorld::helloworld"/>
+        <add id="Mageplaza_HelloWorld::hello_configuration" title="Configuration" module="Mageplaza_HelloWorld" sortOrder="99" parent="Mageplaza_HelloWorld::helloworld" action="adminhtml/system_config/edit/section/helloworld" resource="Mageplaza_HelloWorld::helloworld_configuration"/>
+    </menu>
+</config>
+
+Structure:
+<add id="Mageplaza_HelloWorld::post" title="Manage Posts" module="Mageplaza_HelloWorld" sortOrder="10" action="mageplaza_helloworld/post" resource="Mageplaza_HelloWorld::post" parent="Mageplaza_HelloWorld::helloworld"/>
+
+~ id: It’s a unique string and format:{Vendor_ModuleName}::{menu_description}.
+
+~ title: attribute is the text which will be shown on the menu bar.
+
+~ module: attribute is defined the module which this menu is belong to.
+
+~ sortOrder: attribute is defined the position of the menu. Lower value will display on top of menu.
+
+~ parent: attribute is an Id of other menu node. It will tell Magento that this menu is a child of another menu
+
+~ action: attribute will define the url of the page which this menu link to. As we talk above, the url will be followed this format {router_name}{controller_folder}{action_name}. - In this example, this menu will link to the module HelloWorld, controller Post and action Index
+
+~ resource: attribute is used to defined the ACL rule which the admin user must have in order to see and access this menu. We will find more detail about ACL in other topic.
+
+
+Step 3: Flush Magento cache
+php bin/magento c:c 
+
+~~~~~~~~~~~~~~~~
+https://inchoo.net/magento-2/how-to-create-a-basic-module-in-magento-2/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

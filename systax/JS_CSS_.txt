@@ -1,0 +1,18 @@
+rm -rI var/cache/
+rm -rI var/page_cache/
+rm -rI var/view_preprocessed/
+
+frontend: 
+rm -rI pub/static/frontend/*
+php bin/magento s:s:d -f en_US --area frontend
+php bin/magento s:s:d -f de_DE en_US --area frontend
+
+backend:
+rm -rI pub/static/adminhtml/*
+bin/magento s : s : d -f de_DE en_US --area adminhtml
+
+Two section:
+rm -rI pub/static/*
+bin/magento s : s : d -f
+
+php bin/magento s:up --keep-generated

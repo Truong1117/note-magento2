@@ -1,0 +1,819 @@
+***
+Upload Image using UI Component in Magento 2
+***
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+1. Add the file name image
+
+ <field name="image">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="dataType" xsi:type="string">string</item>
+                    <item name="source" xsi:type="string">post</item>
+                    <item name="label" xsi:type="string" translate="true">Image</item>
+                    <item name="visible" xsi:type="boolean">true</item>
+                    <item name="formElement" xsi:type="string">fileUploader</item>
+                    <item name="elementTmpl" xsi:type="string">ui/form/element/uploader/uploader</item>
+                    <item name="previewTmpl" xsi:type="string">Magento_Catalog/image-preview</item>
+                    <item name="validation" xsi:type="array">
+                        <item name="required-entry" xsi:type="boolean">false</item>
+                    </item>
+                    <item name="uploaderConfig" xsi:type="array">
+                        <item name="url" xsi:type="url" path="mageplaza_helloworld/post/uploader"/>
+                    </item>
+                </item>
+            </argument>
+        </field>
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+2. Create the action name Uploader.
+namespace Mageplaza\HelloWorld\Controller\Adminhtml\Post;
+
+<?php
+namespace Mageplaza\HelloWorld\Controller\Adminhtml\Post;
+
+use Magento\Framework\Controller\ResultFactory;
+use Magento\Backend\App\Action;
+
+/**
+ * Class Upload
+ */
+class Uploader extends Action
+{
+    /**
+     * Image Uploader
+     *
+     * @var \Mageplaza\HelloWorld\Model\Banner\ImageUploader
+     */
+    protected $imageUploader;
+
+    /**
+     * Upload constructor.
+     *
+     * @param \Magento\Backend\App\Action\Context $context
+     * @param \Mageplaza\HelloWorld\Model\Post\ImageUploader $imageUploader
+     */
+    public function __construct(
+        \Magento\Backend\App\Action\Context $context,
+        \Mageplaza\HelloWorld\Model\Post\ImageUploader $imageUploader
+    ) {
+        parent::__construct($context);
+        $this->imageUploader = $imageUploader;
+    }
+
+    /**
+     * Authorization level of a basic admin session
+     *
+     * @return bool
+     */
+    protected function _isAllowed()
+    {
+        return $this->_authorization->isAllowed('Mageplaza_HelloWorld::post_read') || $this->_authorization->isAllowed('Mageplaza_HelloWorld::post_create');
+    }
+
+    /**
+     * Upload file controller action.
+     *
+     * @return \Magento\Framework\Controller\ResultInterface
+     */
+    public function execute()
+    {
+        $imageId = $this->_request->getParam('param_name', 'image');
+        try {
+            $result = $this->imageUploader->saveFileToTmpDir($imageId);
+
+            $result['cookie'] = [
+                'name' => $this->_getSession()->getName(),
+                'value' => $this->_getSession()->getSessionId(),
+                'lifetime' => $this->_getSession()->getCookieLifetime(),
+                'path' => $this->_getSession()->getCookiePath(),
+                'domain' => $this->_getSession()->getCookieDomain(),
+            ];
+        } catch (\Exception $e) {
+            $result = ['error' => $e->getMessage(), 'errorcode' => $e->getCode()];
+        }
+        return $this->resultFactory->create(ResultFactory::TYPE_JSON)->setData($result);
+    }
+}
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+3. Create the file named ImageUploader.php
+<?php
+namespace Mageplaza\HelloWorld\Model\Post;
+
+use Magento\Framework\App\ObjectManager;
+
+class ImageUploader
+{
+    /**
+     * Core file storage database
+     *
+     * @var \Magento\MediaStorage\Helper\File\Storage\Database
+     */
+    protected $coreFileStorageDatabase;
+
+    /**
+     * Media directory object (writable).
+     *
+     * @var \Magento\Framework\Filesystem\Directory\WriteInterface
+     */
+    protected $mediaDirectory;
+
+    /**
+     * Uploader factory
+     *
+     * @var \Magento\MediaStorage\Model\File\UploaderFactory
+     */
+    private $uploaderFactory;
+
+    /**
+     * Store manager
+     *
+     * @var \Magento\Store\Model\StoreManagerInterface
+     */
+    protected $storeManager;
+
+    /**
+     * @var \Psr\Log\LoggerInterface
+     */
+    protected $logger;
+
+    /**
+     * Base tmp path
+     *
+     * @var string
+     */
+    protected $baseTmpPath;
+
+    /**
+     * Base path
+     *
+     * @var string
+     */
+    protected $basePath;
+
+    /**
+     * Allowed extensions
+     *
+     * @var string
+     */
+    protected $allowedExtensions;
+
+    /**
+     * @var Filesystem
+     */
+    private $fileInfo;
+
+    /**
+     * ImageUploader constructor
+     *
+     * @param \Magento\MediaStorage\Helper\File\Storage\Database $coreFileStorageDatabase
+     * @param \Magento\Framework\Filesystem $filesystem
+     * @param \Magento\MediaStorage\Model\File\UploaderFactory $uploaderFactory
+     * @param \Magento\Store\Model\StoreManagerInterface $storeManager
+     * @param \Psr\Log\LoggerInterface $logger
+     * @param string $baseTmpPath
+     * @param string $basePath
+     * @param string[] $allowedExtensions
+     */
+    public function __construct(
+        \Magento\MediaStorage\Helper\File\Storage\Database $coreFileStorageDatabase,
+        \Magento\Framework\Filesystem $filesystem,
+        \Magento\MediaStorage\Model\File\UploaderFactory $uploaderFactory,
+        \Magento\Store\Model\StoreManagerInterface $storeManager,
+        \Psr\Log\LoggerInterface $logger,
+        $baseTmpPath = 'mageplaza_helloworld/tmp/upload_image',
+        $basePath = 'mageplaza_helloworld/upload_image',
+        $allowedExtensions = ['jpg', 'jpeg', 'gif', 'png']
+    ) {
+        $this->coreFileStorageDatabase = $coreFileStorageDatabase;
+        $this->mediaDirectory = $filesystem->getDirectoryWrite(\Magento\Framework\App\Filesystem\DirectoryList::MEDIA);
+        $this->uploaderFactory = $uploaderFactory;
+        $this->storeManager = $storeManager;
+        $this->logger = $logger;
+        $this->baseTmpPath = $baseTmpPath;
+        $this->basePath = $basePath;
+        $this->allowedExtensions = $allowedExtensions;
+    }
+
+    /**
+     * Set base tmp path
+     *
+     * @param string $baseTmpPath
+     *
+     * @return void
+     */
+    public function setBaseTmpPath($baseTmpPath)
+    {
+        $this->baseTmpPath = $baseTmpPath;
+    }
+
+    /**
+     * Set base path
+     *
+     * @param string $basePath
+     *
+     * @return void
+     */
+    public function setBasePath($basePath)
+    {
+        $this->basePath = $basePath;
+    }
+
+    /**
+     * Set allowed extensions
+     *
+     * @param string[] $allowedExtensions
+     *
+     * @return void
+     */
+    public function setAllowedExtensions($allowedExtensions)
+    {
+        $this->allowedExtensions = $allowedExtensions;
+    }
+
+    /**
+     * Retrieve base tmp path
+     *
+     * @return string
+     */
+    public function getBaseTmpPath()
+    {
+        return $this->baseTmpPath;
+    }
+
+    /**
+     * Retrieve base path
+     *
+     * @return string
+     */
+    public function getBasePath()
+    {
+        return $this->basePath;
+    }
+
+    /**
+     * Retrieve base path
+     *
+     * @return string[]
+     */
+    public function getAllowedExtensions()
+    {
+        return $this->allowedExtensions;
+    }
+
+    /**
+     * Retrieve path
+     *
+     * @param string $path
+     * @param string $imageName
+     *
+     * @return string
+     */
+    public function getFilePath($path, $imageName)
+    {
+        return rtrim($path, '/') . '/' . ltrim($imageName, '/');
+    }
+
+    /**
+     * Checking file for moving and move it
+     *
+     * @param string $imageName
+     *
+     * @return string
+     *
+     * @throws \Magento\Framework\Exception\LocalizedException
+     */
+    public function moveFileFromTmp($imageName)
+    {
+        $baseTmpPath = $this->getBaseTmpPath();
+        $basePath = $this->getBasePath();
+
+        $baseImagePath = $this->getFilePath($basePath, $imageName);
+        $baseTmpImagePath = $this->getFilePath($baseTmpPath, $imageName);
+
+        try {
+            if ($this->getFileInfo()->isExist($imageName, $this->baseTmpPath)) {
+                $this->coreFileStorageDatabase->copyFile(
+                    $baseTmpImagePath,
+                    $baseImagePath
+                );
+                $this->mediaDirectory->renameFile(
+                    $baseTmpImagePath,
+                    $baseImagePath
+                );
+            }
+        } catch (\Exception $e) {
+            throw new \Magento\Framework\Exception\LocalizedException(
+                __('Something went wrong while saving the file(s).')
+            );
+        }
+
+        return $imageName;
+    }
+
+    /**
+     * Get FileInfo instance
+     *
+     * @return FileInfo
+     *
+     * @deprecated 101.1.0
+     */
+    private function getFileInfo()
+    {
+        if ($this->fileInfo === null) {
+            $this->fileInfo = ObjectManager::getInstance()->get(FileInfo::class);
+        }
+        return $this->fileInfo;
+    }
+
+    /**
+     * Checking file for save and save it to tmp dir
+     *
+     * @param string $fileId
+     *
+     * @return string[]
+     *
+     * @throws \Magento\Framework\Exception\LocalizedException
+     */
+    public function saveFileToTmpDir($fileId)
+    {
+        $baseTmpPath = $this->getBaseTmpPath();
+
+        /** @var \Magento\MediaStorage\Model\File\Uploader $uploader */
+        $uploader = $this->uploaderFactory->create(['fileId' => $fileId]);
+        $uploader->setAllowedExtensions($this->getAllowedExtensions());
+        $uploader->setAllowRenameFiles(true);
+
+        $result = $uploader->save($this->mediaDirectory->getAbsolutePath($baseTmpPath));
+        unset($result['path']);
+
+        if (!$result) {
+            throw new \Magento\Framework\Exception\LocalizedException(
+                __('File can not be saved to the destination folder.')
+            );
+        }
+
+        /**
+         * Workaround for prototype 1.7 methods "isJSON", "evalJSON" on Windows OS
+         */
+        $result['tmp_name'] = str_replace('\\', '/', $result['tmp_name']);
+        $result['url'] = $this->storeManager
+                ->getStore()
+                ->getBaseUrl(
+                    \Magento\Framework\UrlInterface::URL_TYPE_MEDIA
+                ) . $this->getFilePath($baseTmpPath, $result['file']);
+        $result['name'] = $result['file'];
+
+        if (isset($result['file'])) {
+            try {
+                $relativePath = rtrim($baseTmpPath, '/') . '/' . ltrim($result['file'], '/');
+                $this->coreFileStorageDatabase->saveFile($relativePath);
+            } catch (\Exception $e) {
+                $this->logger->critical($e);
+                throw new \Magento\Framework\Exception\LocalizedException(
+                    __('Something went wrong while saving the file(s).')
+                );
+            }
+        }
+
+        return $result;
+    }
+
+    /**
+     * Delete the image name
+     *
+     * @param string $imageName
+     * @param string $type
+     *
+     * @return void
+     */
+    public function deleteImage($imageName, $type = 'dir')
+    {
+        $basePath = $this->getBasePath();
+        if ($type == 'tmp') {
+            $basePath = $this->getBaseTmpPath();
+        }
+
+        if ($this->getFileInfo()->isExist($imageName, $basePath)) {
+            $this->getFileInfo()->deleteFile($imageName, $basePath);
+        }
+    }
+
+    public function getBaseUrl()
+    {
+        return $this->getBaseUrl(['_type' => UrlInterface::URL_TYPE_MEDIA]).'magento_helloworld/upload_image/';
+    }
+}
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+4. Convert image data to acceptable for rendering format
+
+<?php
+app\Mageplaza\HelloWorld\Model\Post\DataProvider.php
+namespace Mageplaza\HelloWorld\Model\Post;
+
+use Mageplaza\HelloWorld\Model\ResourceModel\Post\CollectionFactory;
+use Magento\Framework\App\Request\DataPersistorInterface;
+use Magento\Framework\App\ObjectManager;
+use Mageplaza\HelloWorld\Model\Post\FileInfo;
+use Magento\Framework\Filesystem;
+
+class DataProvider extends \Magento\Ui\DataProvider\AbstractDataProvider
+{
+
+    /**
+     * @var \Mageplaza\HelloWorld\Model\ResourceModel\Post\Collection
+     */
+    protected $postCollectionFactory;
+
+
+    /**
+     * @var DataPersistorInterface
+     */
+    protected $dataPersistor;
+
+    /**
+     * @var array
+     */
+    protected $loadedData;
+
+    /**
+     * @var Filesystem
+     */
+    private $fileInfo;
+
+    public function __construct(
+        $name,
+        $primaryFieldName,
+        $requestFieldName,
+        CollectionFactory $postCollectionFactory,
+        array $meta = [],
+        array $data = []
+    ) {
+        $this->collection = $postCollectionFactory->create();
+        parent::__construct($name, $primaryFieldName, $requestFieldName, $meta, $data);
+    }
+
+    public function getData()
+    {
+        if (isset($this->loadedData)) {
+            return $this->loadedData;
+        }
+
+        $items = $this->collection->getItems();
+        $this->loadedData = array();
+        /** @var Customer $customer */
+        foreach ($items as $post) {
+            $post = $this->convertValues($post);
+            $this->loadedData[$post->getPostId()] = $post->getData();
+        }
+
+        // Used from the Save action
+        $data = $this->dataPersistor->get('image');
+        if (!empty($data)) {
+            $post = $this->collection->getNewEmptyItem();
+            $post->setData($data);
+            $this->loadedData[$post->getPostId()] = $post->getData();
+            $this->dataPersistor->clear('image');
+        }
+
+        return $this->loadedData;
+    }
+
+    private function convertValues($post)
+    {
+        $fileName = $post->getImage();
+        $image = [];
+        if ($this->getFileInfo()->isExist($fileName)) {
+            $stat = $this->getFileInfo()->getStat($fileName);
+            $mime = $this->getFileInfo()->getMimeType($fileName);
+            $image[0]['name'] = $fileName;
+            $image[0]['url'] = $post->getImageUrl();
+            $image[0]['size'] = isset($stat) ? $stat['size'] : 0;
+            $image[0]['type'] = $mime;
+        }
+        $post->setImage($image);
+
+        return $post;
+    }
+
+    /**
+     * Get FileInfo instance
+     *
+     * @return FileInfo
+     *
+     * @deprecated 101.1.0
+     */
+    private function getFileInfo()
+    {
+        if ($this->fileInfo === null) {
+            $this->fileInfo = ObjectManager::getInstance()->get(FileInfo::class);
+        }
+        return $this->fileInfo;
+    }
+}
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+5. Create the file named FileInfo.php
+app\Mageplaza\HelloWorld\Model\Post\FileInfo.php
+<?php
+namespace Mageplaza\HelloWorld\Model\Post;
+
+
+use Magento\Framework\App\Filesystem\DirectoryList;
+use Magento\Framework\File\Mime;
+use Magento\Framework\Filesystem;
+use Magento\Framework\Filesystem\Directory\WriteInterface;
+
+/**
+ * Class FileInfo
+ *
+ * Provides information about requested file
+ */
+class FileInfo
+{
+    /**
+     * Path in /pub/media directory
+     */
+    const ENTITY_MEDIA_PATH = 'mageplaza_helloworld/upload_image';
+
+    /**
+     * @var Filesystem
+     */
+    private $filesystem;
+
+    /**
+     * @var Mime
+     */
+    private $mime;
+
+    /**
+     * @var WriteInterface
+     */
+    private $mediaDirectory;
+
+    /**
+     * @param Filesystem $filesystem
+     * @param Mime $mime
+     */
+    public function __construct(
+        Filesystem $filesystem,
+        Mime $mime
+    ) {
+        $this->filesystem = $filesystem;
+        $this->mime = $mime;
+    }
+
+    /**
+     * Get WriteInterface instance
+     *
+     * @return WriteInterface
+     */
+    private function getMediaDirectory()
+    {
+        if ($this->mediaDirectory === null) {
+            $this->mediaDirectory = $this->filesystem->getDirectoryWrite(DirectoryList::MEDIA);
+        }
+        return $this->mediaDirectory;
+    }
+
+    /**
+     * Retrieve MIME type of requested file
+     *
+     * @param string $fileName
+     * @return string
+     */
+    public function getMimeType($fileName)
+    {
+        $filePath = self::ENTITY_MEDIA_PATH . '/' . ltrim($fileName, '/');
+        $absoluteFilePath = $this->getMediaDirectory()->getAbsolutePath($filePath);
+
+        $result = $this->mime->getMimeType($absoluteFilePath);
+        return $result;
+    }
+
+    /**
+     * Get file statistics data
+     *
+     * @param string $fileName
+     * @return array
+     */
+    public function getStat($fileName)
+    {
+        $filePath = self::ENTITY_MEDIA_PATH . '/' . ltrim($fileName, '/');
+
+        $result = $this->getMediaDirectory()->stat($filePath);
+        return $result;
+    }
+
+    /**
+     * Check if the file exists
+     *
+     * @param string $fileName
+     * @return bool
+     */
+    public function isExist($fileName, $baseTmpPath = false)
+    {
+        $filePath = self::ENTITY_MEDIA_PATH . '/' . ltrim($fileName, '/');
+        if ($baseTmpPath) {
+            $filePath = $baseTmpPath . '/' . ltrim($fileName, '/');
+        }
+
+        $result = $this->getMediaDirectory()->isExist($filePath);
+        return $result;
+    }
+
+    /**
+     * Delete the file
+     *
+     * @param string $fileName
+     * @return bool
+     */
+    public function deleteFile($fileName, $baseTmpPath = false)
+    {
+        $filePath = self::ENTITY_MEDIA_PATH . '/' . ltrim($fileName, '/');
+        if ($baseTmpPath) {
+            $filePath = $baseTmpPath . '/' . ltrim($fileName, '/');
+        }
+
+        return $this->getMediaDirectory()->delete($filePath);
+    }
+}
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+6. Retrieve the Image URL
+app\Mageplaza\HelloWorld\Model\Post.php
+<?php
+
+namespace Mageplaza\HelloWorld\Model;
+
+use Magento\Framework\DataObject\IdentityInterface;
+use Magento\Framework\Model\AbstractModel;
+
+use Mageplaza\HelloWorld\Model\Post\FileInfo;
+use Magento\Framework\App\ObjectManager;
+use Magento\Store\Model\StoreManagerInterface;
+
+
+
+class Post extends AbstractModel implements IdentityInterface
+{
+	const CACHE_TAG = 'mageplaza_helloworld_post';
+
+	const KEY_ENTITY_TYPE_ID = 'entity_type_id';
+
+	const KEY_ATTR_TYPE_ID = 'attribute_set_id';
+
+	protected $_cacheTag = 'mageplaza_helloworld_post';
+
+	protected $_eventPrefix = 'mageplaza_helloworld_post';
+
+	protected function _construct()
+	{
+		parent::_construct();
+		$this->_init(\Mageplaza\HelloWorld\Model\ResourceModel\Post::class);
+	}
+
+	/**
+	 * Retrieve the Image URL
+	 *
+	 * @param string $imageName
+	 * @return bool|string
+	 * @throws \Magento\Framework\Exception\LocalizedException
+	 */
+	public function getImageUrl($imageName = null)
+	{
+		$url = '';
+		$image = $imageName;
+		if (!$image) {
+			$image = $this->getData('image');
+		}
+		if ($image) {
+			if (is_string($image)) {
+				$url = $this->_getStoreManager()->getStore()->getBaseUrl(
+					\Magento\Framework\UrlInterface::URL_TYPE_MEDIA
+				) . FileInfo::ENTITY_MEDIA_PATH . '/' . $image;
+			} else {
+				throw new \Magento\Framework\Exception\LocalizedException(
+					__('Something went wrong while getting the image url.')
+				);
+			}
+		}
+		return $url;
+	}
+
+	/**
+	 * Get StoreManagerInterface instance
+	 *
+	 * @return StoreManagerInterface
+	 */
+	private function _getStoreManager()
+	{
+		if ($this->_storeManager === null) {
+			$this->_storeManager = ObjectManager::getInstance()->get(StoreManagerInterface::class);
+		}
+		return $this->_storeManager;
+	}
+}
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+7. Process saving the Image
+app\Mageplaza\HelloWorld\Controller\Adminhtml\Post\Save.php 
+<?php
+
+namespace Mageplaza\HelloWorld\Controller\Adminhtml\Post;
+
+use Magento\Backend\App\Action;
+use Magento\Backend\App\Action\Context;
+use Mageplaza\HelloWorld\Model\PostFactory;
+use Magento\Framework\App\Request\DataPersistorInterface;
+
+use Mageplaza\HelloWorld\Model\Post\ImageUploader;
+
+class Save extends Action
+{
+	/**
+	 * @var PostFactory
+	 */
+	const ADMIN_RESOURCE = 'Mageplaza_HelloWorld::helloworld';
+	protected $dataPersistor;
+	protected $imageUploader;
+	protected $_post;
+
+	public function __construct(
+		Context $context,
+		PostFactory $post,
+		DataPersistorInterface $dataPersistor,
+		ImageUploader $imageUploader
+	) {
+		$this->_post = $post;
+		$this->dataPersistor = $dataPersistor;
+		$this->imageUploader = $imageUploader;
+		parent::__construct($context);
+	}
+
+	protected function _isAllowed()
+	{
+		return $this->_authorization->isAllowed('Mageplaza_HelloWorld::helloworld');
+	}
+
+	public function execute()
+	{
+		$storeId = (int)$this->getRequest()->getParam('store_id');
+		$data = $this->getRequest()->getParams();
+		$resultRedirect = $this->resultRedirectFactory->create();
+		if ($data) {
+			$params = [];
+			$post = $this->_post->create();
+			$post->setStoreId($storeId);
+			$params['store'] = $storeId;
+			if (empty($data['post_id'])) {
+				$data['post_id'] = null;
+			} else {
+				$post->load($data['post_id']);
+				$params['post_id'] = $data['post_id'];
+			}
+			$imageName = '';
+			if (!empty($data['image'])) {
+				$imageName = $data['image'][0]['name'];
+			}
+			$post->addData($data);
+			$post->setImage($imageName);
+			try {
+				$post->save();
+				$this->messageManager->addSuccessMessage(__('You saved this record.'));
+				$this->_getSession()->setFormData(false);
+				if ($imageName) {
+					$this->imageUploader->moveFileFromTmp($imageName);
+				}
+				if ($this->getRequest()->getParam('back')) {
+					$params['post_id'] = $post->getPostId();
+					$params['_current'] = true;
+					return $resultRedirect->setPath('*/*/edit', $params);
+				}
+				return $resultRedirect->setPath('*/*/');
+			} catch (\Exception $e) {
+				$this->messageManager->addErrorMessage($e->getMessage());
+				$this->messageManager->addExceptionMessage($e, __('Something went wrong while saving the record.'));
+			}
+			$this->_getSession()->setFormData($this->getRequest()->getPostValue());
+			return $resultRedirect->setPath('*/*/edit', $params);
+		}
+		return $resultRedirect->setPath('*/*/');
+	}
+}
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+8. Flush the caches, test and see the results.
+php bin/magento c:f
+
+
+
+
+
+
+
+
+
+

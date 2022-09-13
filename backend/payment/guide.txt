@@ -1,0 +1,1 @@
+Admin Panel -> Stores -> Configuration -> Sales -> Payment Methods -> PayPal Plus Api Settings -> PayPal Plus Payment Settings ->Add payment methods to PayPal PLUS frame

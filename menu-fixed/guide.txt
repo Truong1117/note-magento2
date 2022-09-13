@@ -1,0 +1,14 @@
+<script>
+    require([
+        'jquery'
+    ], function ($) {
+        var stickyHeaderTop = $('.rd-navbar-nav-wrap').offset().top;
+        $(window).scroll(function(){
+            if( $(window).scrollTop() > stickyHeaderTop ) {
+                $('.rd-navbar-nav-wrap').addClass('menu-fixed');
+            } else {
+                $('.rd-navbar-nav-wrap').removeClass('menu-fixed');
+            }
+        });
+    });
+</script>

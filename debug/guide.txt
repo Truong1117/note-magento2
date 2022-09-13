@@ -1,0 +1,17 @@
+//            $debugBackTrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
+//            foreach ($debugBackTrace as $item) {
+//                echo @$item['class'] . @$item['type'] . @$item['function'] . "<br/>";
+//            };exit;
+
+https://www.mageplaza.com/devdocs/how-write-log-magento-2.html
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~
+protected $logger;
+public function __construct(\Psr\Log\LoggerInterface $logger)
+{
+    $this->logger = $logger;
+}
+
+$this->logger->info($message);
+$this->logger->debug($message);

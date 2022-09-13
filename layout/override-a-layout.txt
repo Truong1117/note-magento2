@@ -1,0 +1,89 @@
+Override a layout
+
+I. Examples of customizations that involve overriding layouts:
+
+1. Examples of customizations that involve overriding layouts:
+
+~ Suppressing method invocation.
+
+~ Modifying method arguments.
+
+~ Canceling block/container removal using the remove attribute.
+
+~ Setting XML attributes of blocks and containers.
+
+~ Removing block arguments.
+
+~ Modifying and suppressing handles inclusion.
+
+~ Removing all handle instructions by declaring an overriding layout file with an empty handle.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+II. How to override a layout
+
+This section discusses how to override:
+
+~ Base layout
+
+~ Theme layout
+
+~~~~~
+1. Override base layouts
+
+To add an overriding base layout file (to override a base layout provided by the module):
+
+	~ Put a layout file with the same name in the following location:
+
+	 <theme_dir>
+   |__/<Namespace_Module>
+     |__/layout
+       |__/override
+          |__/base
+            |--<layout1>.xml
+            |--<layout2>.xml
+
+These files override the following layouts:
+
+	~ <module_dir>/view/frontend/layout/<layout1>.xml
+
+	~ <module_dir>/view/frontend/layout/<layout2>.xml
+
+For example, <theme_dir>/Magento_Checkout/layout/override/base/checkout_cart_index.xml 
+will override Magento_Checkout/view/frontend/layout/checkout_cart_index.xml.
+
+~~~~~
+2. Override theme layouts
+To add an overriding theme file (to override a parent theme layout):
+
+	~ Put a layout file with the same name in the following location:
+
+<theme_dir>
+  |__/<Namespace_Module>
+    |__/layout
+      |__/override
+         |__/theme
+            |__/<Parent_Vendor>
+               |__/<parent_theme>
+                  |--<layout1>.xml
+                  |--<layout2>.xml
+
+These files override the following layouts:
+
+	~ <parent_theme_dir>/<Namespace>_<Module>/layout/<layout1>.xml
+
+	~ <parent_theme_dir>/<Namespace>_<Module>/layout/<layout2>.xml
+
+For example, <theme_dir>/Magento_Checkout/layout/override/theme/Magento/luma/checkout_cart_index.xml 
+will override app/design/frontend/Magento/luma/Magento_Checkout/layout/checkout_cart_index.xml.
+
+
+
+
+
+
+
+
+
+
+

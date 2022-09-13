@@ -1,0 +1,1424 @@
+Step 1: Create the file app\code\Tigren\AdvancedCheckout\etc\module.xml
+
+      <?xml version="1.0"?>
+        <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Module/etc/module.xsd">
+            <module name="Tigren_AdvancedCheckout" setup_version="1.0.0">
+                <sequence>
+                    <module name="Magento_Checkout"/>
+                </sequence>
+            </module>
+        </config>
+
+~~~~~~~~~~~~~~~~~~
+Step 2: Create the file app\code\Tigren\AdvancedCheckout\registration.php
+
+      <?php
+        /**
+   * @author Tigren Team
+   * @copyright Copyright (c) 2015 Tigren (https://www.tigren.com)
+   * @package Tigren_AdvancedCheckout
+   */
+
+        \Magento\Framework\Component\ComponentRegistrar::register(
+            \Magento\Framework\Component\ComponentRegistrar::MODULE,
+            'Tigren_AdvancedCheckout',
+            __DIR__
+        );
+
+~~~~~~~~~~~~~~~~~~
+
+Step 3: Create the file app\code\Tigren\AdvancedCheckout\etc\di.xml to declare the plugin
+
+      <?xml version="1.0"?>
+        <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+            <type name="Magento\Checkout\Block\Checkout\LayoutProcessor">
+                <plugin name="tigren_modified_checkout_layout_processor" type="Tigren\AdvancedCheckout\Plugin\Block\LayoutProcessor" sortOrder="1"/>
+            </type>
+        </config>
+
+~~~~~~~~~~~~~~~~~~~~
+Step 4: Create the file app\code\Tigren\AdvancedCheckout\Plugin\Block\LayoutProcessor.php to insert Billing Address form
+
+      <?php
+
+        namespace Tigren\AdvancedCheckout\Plugin\Block;
+
+        use Magento\Customer\Model\AttributeMetadataDataProvider;
+        use Magento\Ui\Component\Form\AttributeMapper;
+        use Magento\Checkout\Block\Checkout\AttributeMerger;
+        use Magento\Checkout\Model\Session as CheckoutSession;
+
+        class LayoutProcessor
+        {
+            /**
+       * @var AttributeMetadataDataProvider
+       */
+            public $attributeMetadataDataProvider;
+
+            /**
+       * @var AttributeMapper
+       */
+            public $attributeMapper;
+
+            /**
+       * @var AttributeMerger
+       */
+            public $merger;
+
+            /**
+       * @var CheckoutSession
+       */
+            public $checkoutSession;
+
+            /**
+       * @var null
+       */
+            public $quote = null;
+
+            /**
+       * LayoutProcessor constructor.
+       *
+       * @param AttributeMetadataDataProvider $attributeMetadataDataProvider
+       * @param AttributeMapper $attributeMapper
+       * @param AttributeMerger $merger
+       * @param CheckoutSession $checkoutSession
+       */
+            public function __construct(
+                AttributeMetadataDataProvider $attributeMetadataDataProvider,
+                AttributeMapper $attributeMapper,
+                AttributeMerger $merger,
+                CheckoutSession $checkoutSession
+            )
+            {
+                $this->attributeMetadataDataProvider = $attributeMetadataDataProvider;
+                $this->attributeMapper = $attributeMapper;
+                $this->merger = $merger;
+                $this->checkoutSession = $checkoutSession;
+            }
+
+            /**
+       * @param \Magento\Checkout\Block\Checkout\LayoutProcessor $subject
+       * @param array $jsLayout
+       * @return array
+       */
+            public function aroundProcess(
+                \Magento\Checkout\Block\Checkout\LayoutProcessor $subject,
+                \Closure $proceed,
+                array $jsLayout
+            )
+            {
+
+                $jsLayoutResult = $proceed($jsLayout);
+
+                if ($this->getQuote()->isVirtual()) {
+                    return $jsLayoutResult;
+                }
+
+                if (isset($jsLayoutResult['components']['checkout']['children']['steps']['children']['shipping-step']['children']
+                    ['shippingAddress']['children']['shipping-address-fieldset'])) {
+
+                    $jsLayoutResult['components']['checkout']['children']['steps']['children']['shipping-step']
+                    ['children']['shippingAddress']['children']['shipping-address-fieldset']['children']['street']['children'][0]['placeholder'] = __('Street Address');
+                    $jsLayoutResult['components']['checkout']['children']['steps']['children']['shipping-step']
+                    ['children']['shippingAddress']['children']['shipping-address-fieldset']['children']['street']['children'][1]['placeholder'] = __('Street line 2');
+
+                    $jsLayoutResult['components']['checkout']['children']['steps']['children']['shipping-step']
+                    ['children']['shippingAddress']['children']['billing-address']['children']['form-fields']['children']['street']['children'][0]['placeholder'] = __('Street Address');
+                    $jsLayoutResult['components']['checkout']['children']['steps']['children']['shipping-step']
+                    ['children']['shippingAddress']['children']['billing-address']['children']['form-fields']['children']['street']['children'][1]['placeholder'] = __('Street line 2');
+                }
+
+                $elements = $this->getAddressAttributes();
+
+                $jsLayoutResult['components']['checkout']['children']['steps']['children']['shipping-step']
+                ['children']['shippingAddress']['children']['billingAddress']['children']['address-fieldset'] = $this->getCustomBillingAddressComponent($elements);
+
+                if (isset($jsLayoutResult['components']['checkout']['children']['steps']['children']['billing-step']['children']
+                    ['payment']['children']['afterMethods']['children']['billing-address-form'])) {
+                    unset($jsLayoutResult['components']['checkout']['children']['steps']['children']['billing-step']['children']
+                        ['payment']['children']['afterMethods']['children']['billing-address-form']);
+                };
+
+                if ($billingAddressForms = $jsLayoutResult['components']['checkout']['children']['steps']['children']['billing-step']['children']
+                ['payment']['children']['payments-list']['children']) {
+                    foreach ($billingAddressForms as $billingAddressFormsKey => $billingAddressForm) {
+                        if ($billingAddressFormsKey != 'before-place-order') {
+                            unset($jsLayoutResult['components']['checkout']['children']['steps']['children']['billing-step']['children']
+                                ['payment']['children']['payments-list']['children'][$billingAddressFormsKey]);
+                        }
+                    }
+                }
+
+                return $jsLayoutResult;
+            }
+
+            /**
+       * Get Quote
+       *
+       * @return \Magento\Quote\Model\Quote|null
+       */
+            public function getQuote()
+            {
+                if (null === $this->quote) {
+                    $this->quote = $this->checkoutSession->getQuote();
+                }
+
+                return $this->quote;
+            }
+
+            /**
+       * Get all visible address attribute
+       *
+       * @return array
+       */
+            private function getAddressAttributes()
+            {
+                /** @var \Magento\Eav\Api\Data\AttributeInterface[] $attributes */
+                $attributes = $this->attributeMetadataDataProvider->loadAttributesCollection(
+                    'customer_address',
+                    'customer_register_address'
+                );
+
+                $elements = [];
+                foreach ($attributes as $attribute) {
+                    $code = $attribute->getAttributeCode();
+                    if ($attribute->getIsUserDefined()) {
+                        continue;
+                    }
+                    $elements[$code] = $this->attributeMapper->map($attribute);
+                    if (isset($elements[$code]['label'])) {
+                        $label = $elements[$code]['label'];
+                        $elements[$code]['label'] = __($label);
+                    }
+                }
+                return $elements;
+            }
+
+            /**
+       * Prepare billing address field for shipping step for physical product
+       *
+       * @param $elements
+       * @return array
+       */
+            public function getCustomBillingAddressComponent($elements)
+            {
+                $providerName = 'checkoutProvider';
+
+                $components = [
+                    'component' => 'uiComponent',
+                    'displayArea' => 'additional-fieldsets',
+                    'children' => $this->merger->merge(
+                        $elements,
+                        $providerName,
+                        'billingAddress',
+                        [
+                            'country_id' => [
+                                'sortOrder' => 115,
+                            ],
+                            'region' => [
+                                'visible' => false,
+                            ],
+                            'region_id' => [
+                                'component' => 'Magento_Ui/js/form/element/region',
+                                'config' => [
+                                    'template' => 'ui/form/field',
+                                    'elementTmpl' => 'ui/form/element/select',
+                                    'customEntry' => 'billingAddress.region',
+                                ],
+                                'validation' => [
+                                    'required-entry' => true,
+                                ],
+                                'filterBy' => [
+                                    'target' => '${ $.provider }:${ $.parentScope }.country_id',
+                                    'field' => 'country_id',
+                                ],
+                            ],
+                            'postcode' => [
+                                'component' => 'Magento_Ui/js/form/element/post-code',
+                                'validation' => [
+                                    'required-entry' => true,
+                                ],
+                            ],
+                            'company' => [
+                                'validation' => [
+                                    'min_text_length' => 0,
+                                ],
+                            ],
+                            'fax' => [
+                                'validation' => [
+                                    'min_text_length' => 0,
+                                ],
+                            ],
+                            'telephone' => [
+                                'config' => [
+                                    'tooltip' => [
+                                        'description' => __('For delivery questions.'),
+                                    ],
+                                ],
+                            ],
+                        ]
+                    ),
+                ];
+
+                return $components;
+            }
+        }
+Step 5: Create the file app\code\Tigren\AdvancedCheckout\view\frontend\layout\checkout_index_index.xml
+
+      <?xml version="1.0"?>
+        <page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" layout="1column" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+            <body>
+                <referenceBlock name="checkout.root">
+                    <arguments>
+                        <argument name="jsLayout" xsi:type="array">
+                            <item name="components" xsi:type="array">
+                                <item name="checkout" xsi:type="array">
+                                    <item name="children" xsi:type="array">
+                                        <item name="steps" xsi:type="array">
+                                            <item name="children" xsi:type="array">
+                                                <item name="shipping-step" xsi:type="array">
+                                                    <item name="children" xsi:type="array">
+                                                        <item name="shippingAddress" xsi:type="array">
+                                                            <item name="children" xsi:type="array">
+                                                                <item name="billingAddress" xsi:type="array">
+                                                                    <item name="config" xsi:type="array">
+                                                                        <item name="deps" xsi:type="array">
+                                                                            <item name="0" xsi:type="string">checkout.steps.shipping-step.step-config</item>
+                                                                            <item name="1" xsi:type="string">checkoutProvider</item>
+                                                                        </item>
+                                                                        <item name="popUpForm" xsi:type="array">
+                                                                            <item name="element" xsi:type="string">#opc-new-billing-address</item>
+                                                                            <item name="options" xsi:type="array">
+                                                                                <item name="type" xsi:type="string">popup</item>
+                                                                                <item name="responsive" xsi:type="boolean">true</item>
+                                                                                <item name="innerScroll" xsi:type="boolean">true</item>
+                                                                                <item name="title" xsi:type="string" translate="true">Billing Address</item>
+                                                                                <item name="trigger" xsi:type="string">opc-new-billing-address</item>
+                                                                                <item name="buttons" xsi:type="array">
+                                                                                    <item name="save" xsi:type="array">
+                                                                                        <item name="text" xsi:type="string" translate="true">Save Address</item>
+                                                                                        <item name="class" xsi:type="string">action primary action-save-address</item>
+                                                                                    </item>
+                                                                                    <item name="cancel" xsi:type="array">
+                                                                                        <item name="text" xsi:type="string" translate="true">Cancel</item>
+                                                                                        <item name="class" xsi:type="string">action secondary action-hide-popup</item>
+                                                                                    </item>
+                                                                                </item>
+                                                                            </item>
+                                                                        </item>
+                                                                    </item>
+                                                                    <item name="component" xsi:type="string">Tigren_AdvancedCheckout/js/view/billing</item>
+                                                                    <item name="displayArea" xsi:type="string">billing-address</item>
+                                                                    <item name="provider" xsi:type="string">checkoutProvider</item>
+                                                                    <item name="sortOrder" xsi:type="string">1</item>
+                                                                    <item name="children" xsi:type="array">
+                                                                        <item name="before-form" xsi:type="array">
+                                                                            <item name="component" xsi:type="string">uiComponent</item>
+                                                                            <item name="displayArea" xsi:type="string">billing-before-form</item>
+                                                                            <item name="children" xsi:type="array">
+                                                                                <!-- before form fields -->
+                                                                            </item>
+                                                                        </item>
+                                                                        <item name="before-fields" xsi:type="array">
+                                                                            <item name="component" xsi:type="string">uiComponent</item>
+                                                                            <item name="displayArea" xsi:type="string">billing-before-fields</item>
+                                                                            <item name="children" xsi:type="array">
+                                                                                <!-- before fields -->
+                                                                            </item>
+                                                                        </item>
+                                                                        <item name="address-list" xsi:type="array">
+                                                                            <item name="component" xsi:type="string">Tigren_AdvancedCheckout/js/view/billing-address/list</item>
+                                                                            <item name="config" xsi:type="array">
+                                                                                <item name="template" xsi:type="string">Tigren_AdvancedCheckout/billing-address/custom-list</item>
+                                                                            </item>
+                                                                            <item name="displayArea" xsi:type="string">billing-address-list</item>
+                                                                        </item>
+                                                                    </item>
+                                                                </item>
+                                                            </item>
+                                                        </item>
+                                                    </item>
+                                                </item>
+                                            </item>
+                                        </item>
+                                    </item>
+                                </item>
+                            </item>
+                        </argument>
+                    </arguments>
+                </referenceBlock>
+            </body>
+        </page>
+Step 6: create file app\code\Tigren\AdvancedCheckout\view\frontend\web\js\action\edit-billing-address.js
+
+      define([
+            'ko',
+            'Magento_Customer/js/model/address-list'
+        ], function (ko, addressList) {
+            'use strict';
+
+            return function (address) {
+                addressList().some(function (currentAddress, index, addresses) {
+                    if (currentAddress.getKey() === address.getKey()) {
+                        addressList.replace(currentAddress, address);
+                    }
+                });
+
+                addressList.valueHasMutated();
+
+                return address;
+            };
+        });
+Step 7: Create the file app\code\Tigren\AdvancedCheckout\view\frontend\web\js\model\billing-address\form-popup-state.js
+
+      define([
+            'ko'
+        ], function (ko) {
+            'use strict';
+
+            return {
+                isVisible: ko.observable(false)
+            };
+        });
+Step 8: Create the file app\code\Tigren\AdvancedCheckout\view\frontend\web\js\view\billing.js
+
+      define([
+            'jquery',
+            'ko',
+            'underscore',
+            'matchMedia',
+            'mage/utils/objects',
+            'Magento_Ui/js/form/form',
+            'Magento_Customer/js/model/customer',
+            'Magento_Customer/js/model/customer/address',
+            'Magento_Customer/js/model/address-list',
+            'Magento_Checkout/js/model/address-converter',
+            'Magento_Checkout/js/model/quote',
+            'Tigren_AdvancedCheckout/js/model/billing-address/form-popup-state',
+            'Tigren_AdvancedCheckout/js/action/edit-billing-address',
+            'Magento_Checkout/js/action/create-billing-address',
+            'Magento_Checkout/js/action/select-billing-address',
+            'Magento_Checkout/js/checkout-data',
+            'Magento_Checkout/js/model/checkout-data-resolver',
+            'Magento_Customer/js/customer-data',
+            'Magento_Checkout/js/action/set-billing-address',
+            'Magento_Ui/js/modal/modal',
+            'Magento_Ui/js/model/messageList',
+            'mage/translate',
+            'mage/url'
+        ], function (
+            $,
+            ko,
+            _,
+            mediaCheck,
+            mageUtils,
+            Component,
+            customer,
+            address,
+            addressList,
+            addressConverter,
+            quote,
+            formPopUpState,
+            editBillingAddress,
+            createBillingAddress,
+            selectBillingAddress,
+            checkoutData,
+            checkoutDataResolver,
+            customerData,
+            setBillingAddressAction,
+            modal,
+            globalMessageList,
+            $t,
+            url
+        ) {
+            'use strict';
+
+            var popUp = null;
+
+            return Component.extend({
+                defaults: {
+                    template: 'Tigren_AdvancedCheckout/billing',
+                    billingFormTemplate: 'Tigren_AdvancedCheckout/billing-address/form'
+                },
+                visible: ko.observable(!quote.isVirtual()),
+                errorValidationMessage: ko.observable(false),
+                isCustomerLoggedIn: customer.isLoggedIn,
+                isFormPopUpVisible: formPopUpState.isVisible,
+                isFormInline: addressList().length === 0,
+                isNewAddressAdded: ko.observable(false),
+                saveInAddressBook: 1,
+                quoteIsVirtual: quote.isVirtual(),
+
+                /**
+           * @return {exports}
+           */
+
+                /**
+           * Init component
+           */
+                initialize: function () {
+                    this._super();
+                    quote.paymentMethod.subscribe(function () {
+                        checkoutDataResolver.resolveBillingAddress();
+                    }, this);
+                },
+
+                /**
+           * @return {exports.initObservable}
+           */
+                initObservable: function () {
+                    var self = this,
+                        hasNewAddress;
+
+                    this._super()
+                        .observe({
+                            selectedAddress: null,
+                            isAddressFormVisible: true,
+                            isAddressSameAsShipping: false,
+                            isAddressFormListVisible: false,
+                            saveInAddressBook: 1
+                        });
+
+                    quote.billingAddress.subscribe(function (newAddress) {
+                        if (quote.isVirtual()) {
+                            this.isAddressSameAsShipping(false);
+                        } else {
+                            this.isAddressSameAsShipping(
+                                newAddress != null && quote.shippingAddress()
+                                && newAddress.getCacheKey() === quote.shippingAddress().getCacheKey() //eslint-disable-line eqeqeq
+                            );
+                        }
+
+                        if (newAddress != null && newAddress.saveInAddressBook !== undefined) {
+                            this.saveInAddressBook(newAddress.saveInAddressBook);
+                        } else {
+                            this.saveInAddressBook(1);
+                        }
+                    }, this);
+
+                    checkoutDataResolver.resolveBillingAddress();
+
+                    hasNewAddress = addressList.some(function (address) {
+                        return address.getType() === 'new-customer-address' || address.getType() === 'new-billing-address'; //eslint-disable-line eqeqeq
+                    });
+
+                    this.isNewAddressAdded(hasNewAddress);
+
+                    this.isFormPopUpVisible.subscribe(function (value) {
+                        if (value) {
+                            self.getPopUp().openModal();
+                        }
+                    });
+
+                    return this;
+                },
+
+                /**
+           * Navigator change hash handler.
+           *
+           * @param {Object} step - navigation step
+           */
+                navigate: function (step) {
+                    step && step.isVisible(true);
+                },
+
+                /**
+           * @return {*}
+           */
+                getPopUp: function () {
+                    var self = this,
+                        buttons;
+
+                    if (!popUp) {
+                        buttons = this.popUpForm.options.buttons;
+                        this.popUpForm.options.buttons = [
+                            {
+                                text: buttons.save.text ? buttons.save.text : $t('Save Address'),
+                                class: buttons.save.class ? buttons.save.class : 'action primary action-save-address',
+                                click: self.saveNewAddress.bind(self)
+                            },
+                            {
+                                text: buttons.cancel.text ? buttons.cancel.text : $t('Cancel'),
+                                class: buttons.cancel.class ? buttons.cancel.class : 'action secondary action-hide-popup',
+
+                                /** @inheritdoc */
+                                click: this.onClosePopUp.bind(this)
+                            }
+                        ];
+
+                        /** @inheritdoc */
+                        this.popUpForm.options.closed = function () {
+                            self.isFormPopUpVisible(false);
+                        };
+
+                        this.popUpForm.options.modalCloseBtnHandler = this.onClosePopUp.bind(this);
+                        this.popUpForm.options.keyEventHandlers = {
+                            escapeKey: this.onClosePopUp.bind(this)
+                        };
+
+                        /** @inheritdoc */
+                        this.popUpForm.options.opened = function () {
+                            // Store temporary address for revert action in case when user click cancel action
+                            self.temporaryAddress = $.extend(true, {}, checkoutData.getBillingAddressFromData());
+                        };
+                        popUp = modal(this.popUpForm.options, $(this.popUpForm.element));
+                    }
+
+                    return popUp;
+                },
+
+                /**
+           * Revert address and close modal.
+           */
+                onClosePopUp: function () {
+                    checkoutData.getBillingAddressFromData($.extend(true, {}, this.temporaryAddress));
+                    this.getPopUp().closeModal();
+                },
+
+                /**
+           * Show address form popup
+           */
+                showFormPopUp: function () {
+                    this.isFormPopUpVisible(true);
+                },
+
+                /**
+           * Save new billing address
+           */
+                saveNewAddress: function () {
+                    var addressData,
+                        newBillingAddress;
+
+                    this.source.set('params.invalid', false);
+                    this.triggerBillingDataValidateEvent();
+
+                    if (!this.source.get('params.invalid')) {
+                        addressData = this.source.get('billingAddress');
+                        // if user clicked the checkbox, its value is true or false. Need to convert.
+                        addressData['save_in_address_book'] = this.saveInAddressBook ? 1 : 0;
+
+                        // New address must be selected as a billing address
+                        newBillingAddress = createBillingAddress(addressData);
+                        selectBillingAddress(newBillingAddress);
+                        checkoutData.setSelectedBillingAddress(newBillingAddress.getKey());
+                        checkoutData.setNewCustomerBillingAddress($.extend(true, {}, addressData));
+                        this.getPopUp().closeModal();
+                        this.isNewAddressAdded(true);
+                    }
+                },
+
+                /**
+           * Trigger Billing data Validate Event.
+           */
+                triggerBillingDataValidateEvent: function () {
+                    this.source.trigger('billingAddress.data.validate');
+
+                    if (this.source.get('billingAddress.custom_attributes')) {
+                        this.source.trigger('billingAddress.custom_attributes.data.validate');
+                    }
+                },
+            });
+        });
+Step 9: Create the file app\code\Tigren\AdvancedCheckout\view\frontend\web\js\view\shipping.js
+
+      /**
+   * Copyright © Magento, Inc. All rights reserved.
+   * See COPYING.txt for license details.
+   */
+
+        define([
+            'jquery',
+            'underscore',
+            'ko',
+            'Magento_Customer/js/model/customer',
+            'Magento_Customer/js/model/address-list',
+            'Magento_Checkout/js/model/address-converter',
+            'Magento_Checkout/js/model/quote',
+            'Magento_Checkout/js/action/create-shipping-address',
+            'Magento_Checkout/js/action/select-shipping-address',
+            'Magento_Checkout/js/action/create-billing-address',
+            'Magento_Checkout/js/action/select-billing-address',
+            'Magento_Checkout/js/model/shipping-rates-validator',
+            'Magento_Checkout/js/model/shipping-address/form-popup-state',
+            'Magento_Checkout/js/model/shipping-service',
+            'Magento_Checkout/js/action/select-shipping-method',
+            'Magento_Checkout/js/model/shipping-rate-registry',
+            'Magento_Checkout/js/action/set-shipping-information',
+            'Magento_Checkout/js/model/step-navigator',
+            'Magento_Ui/js/modal/modal',
+            'Magento_Checkout/js/model/checkout-data-resolver',
+            'Magento_Checkout/js/checkout-data',
+            'uiRegistry',
+            'mage/translate',
+            'Magento_Checkout/js/model/shipping-rate-service'
+        ], function (
+            $,
+            _,
+            ko,
+            customer,
+            addressList,
+            addressConverter,
+            quote,
+            createShippingAddress,
+            selectShippingAddress,
+            createBillingAddress,
+            selectBillingAddress,
+            shippingRatesValidator,
+            formPopUpState,
+            shippingService,
+            selectShippingMethodAction,
+            rateRegistry,
+            setShippingInformationAction,
+            stepNavigator,
+            modal,
+            checkoutDataResolver,
+            checkoutData,
+            registry,
+            $t
+        ) {
+            'use strict';
+
+            var popUp = null;
+
+            return function (Component) {
+                return Component.extend({
+                    defaults: {
+                        template: 'Tigren_AdvancedCheckout/shipping',
+                    },
+                    isAddressSameAsShipping: ko.observable(true),
+                    isShowBillingForm: ko.observable(false),
+
+                    initChildren: function () {
+                        this.messageContainer = new Messages();
+                        this.createMessagesComponent();
+                        return this;
+                    },
+
+                    createMessagesComponent: function () {
+                        var messagesComponent = {
+                            parent: this.name,
+                            name: this.name + '.messages',
+                            displayArea: 'messages',
+                            component: 'Magento_Ui/js/view/messages',
+                            config: {
+                                messageContainer: this.messageContainer
+                            }
+                        };
+
+                        layout([messagesComponent]);
+
+                        return this;
+                    },
+
+                    setShippingInformation: function () {
+                        if (this.validateShippingInformation()
+                            && this.validateBillingInformation()) {
+                            setShippingInformationAction().done(function () {
+                                stepNavigator.next();
+                            });
+                        }
+                    },
+
+                    /**
+               * @return {Boolean}
+               */
+                    validateShippingInformation: function () {
+                        var shippingAddress,
+                            addressData,
+                            loginFormSelector = 'form[data-role=email-with-possible-login]',
+                            emailValidationResult = customer.isLoggedIn(),
+                            field;
+
+                        if (!quote.shippingMethod()) {
+                            this.errorValidationMessage($t('Please specify a shipping method.'));
+
+                            return false;
+                        }
+
+                        if (!customer.isLoggedIn()) {
+                            $(loginFormSelector).validation();
+                            emailValidationResult = Boolean($(loginFormSelector + ' input[name=username]').valid());
+                        }
+
+                        if (this.isFormInline) {
+                            this.source.set('params.invalid', false);
+                            this.triggerShippingDataValidateEvent();
+
+                            if (emailValidationResult &&
+                                this.source.get('params.invalid') ||
+                                !quote.shippingMethod()['method_code'] ||
+                                !quote.shippingMethod()['carrier_code']
+                            ) {
+                                this.focusInvalid();
+
+                                return false;
+                            }
+
+                            shippingAddress = quote.shippingAddress();
+                            addressData = addressConverter.formAddressDataToQuoteAddress(
+                                this.source.get('shippingAddress')
+                            );
+
+                            //Copy form data to quote shipping address object
+                            for (field in addressData) {
+                                if (addressData.hasOwnProperty(field) &&  //eslint-disable-line max-depth
+                                    shippingAddress.hasOwnProperty(field) &&
+                                    typeof addressData[field] != 'function' &&
+                                    _.isEqual(shippingAddress[field], addressData[field])
+                                ) {
+                                    shippingAddress[field] = addressData[field];
+                                } else if (typeof addressData[field] != 'function' &&
+                                    !_.isEqual(shippingAddress[field], addressData[field])) {
+                                    shippingAddress = addressData;
+                                    break;
+                                }
+                            }
+
+                            if (customer.isLoggedIn()) {
+                                shippingAddress['save_in_address_book'] = 1;
+                            }
+                            selectShippingAddress(shippingAddress);
+                        }
+
+                        if (!emailValidationResult) {
+                            $(loginFormSelector + ' input[name=username]').focus();
+
+                            return false;
+                        }
+
+                        return true;
+                    },
+
+                    validateBillingInformation: function () {
+                        var addressData, newBillingAddress;
+
+                        if ($('[name="billing-address-same-as-shipping"]').is(":checked")) {
+                            if (this.isFormInline) {
+                                var shippingAddress = quote.shippingAddress();
+                                addressData = addressConverter.formAddressDataToQuoteAddress(
+                                    this.source.get('shippingAddress')
+                                );
+                                //Copy form data to quote shipping address object
+                                for (var field in addressData) {
+                                    if (addressData.hasOwnProperty(field) &&
+                                        shippingAddress.hasOwnProperty(field) &&
+                                        typeof addressData[field] !== 'function' &&
+                                        _.isEqual(shippingAddress[field], addressData[field])
+                                    ) {
+                                        shippingAddress[field] = addressData[field];
+                                    } else if (typeof addressData[field] !== 'function' &&
+                                        !_.isEqual(shippingAddress[field], addressData[field])) {
+                                        shippingAddress = addressData;
+                                        break;
+                                    }
+                                }
+
+                                if (customer.isLoggedIn()) {
+                                    shippingAddress.save_in_address_book = 1;
+                                }
+                                newBillingAddress = createBillingAddress(shippingAddress);
+                                selectBillingAddress(newBillingAddress);
+                            } else {
+                                var billingAddress = quote.shippingAddress();
+                                selectBillingAddress(billingAddress);
+                            }
+
+                            return true;
+                        }
+
+                        var selectedAddress = quote.billingAddress();
+                        if (selectedAddress) {
+                            if (selectedAddress.customerAddressId) {
+                                return addressList.some(function (address) {
+                                    if (selectedAddress.customerAddressId === address.customerAddressId) {
+                                        selectBillingAddress(address);
+                                        return true;
+                                    }
+                                    return false;
+                                });
+                            } else if (selectedAddress.getType() === 'new-customer-address' || selectedAddress.getType() === 'new-billing-address') {
+                                return true;
+                            }
+                        }
+
+                        this.source.set('params.invalid', false);
+                        this.source.trigger('billingAddress.data.validate');
+
+                        if (this.source.get('billingAddress.custom_attributes')) {
+                            this.source.trigger('billingAddress.custom_attributes.data.validate');
+                        }
+
+                        if (this.source.get('params.invalid')) {
+                            return false;
+                        }
+
+                        addressData = this.source.get('billingAddress');
+
+                        if ($('#billing-save-in-address-book').is(":checked")) {
+                            addressData.save_in_address_book = 1;
+                        }
+                        newBillingAddress = createBillingAddress(addressData);
+
+                        selectBillingAddress(newBillingAddress);
+
+                        return true;
+                    },
+
+                    /**
+               * @return {Boolean}
+               */
+                    useShippingAddress: function () {
+                        if (this.isAddressSameAsShipping()) {
+                            this.isShowBillingForm(false);
+                        } else {
+                            this.isShowBillingForm(true);
+                        }
+                        return true;
+                    },
+
+                });
+            }
+        });
+Step 10: Create the file app\code\Tigren\AdvancedCheckout\view\frontend\web\js\view\billing-address\list.js
+
+      /**
+   * Copyright © Magento, Inc. All rights reserved.
+   * See COPYING.txt for license details.
+   */
+
+        define([
+            'underscore',
+            'ko',
+            'mageUtils',
+            'uiComponent',
+            'uiLayout',
+            'Magento_Customer/js/model/address-list'
+        ], function (_, ko, utils, Component, layout, addressList) {
+            'use strict';
+
+            var defaultRendererTemplate = {
+                parent: '${ $.$data.parentName }',
+                name: '${ $.$data.name }',
+                component: 'Tigren_AdvancedCheckout/js/view/billing-address/address-renderer/default'
+            };
+
+            return Component.extend({
+                defaults: {
+                    template: 'Tigren_AdvancedCheckout/billing-address/list',
+                    visible: addressList().length > 0,
+                    rendererTemplates: []
+                },
+
+                /** @inheritdoc */
+                initialize: function () {
+                    this._super()
+                        .initChildren();
+
+                    addressList.subscribe(function (changes) {
+                            var self = this;
+
+                            changes.forEach(function (change) {
+                                if (change.status === 'added') {
+                                    self.createRendererComponent(change.value, change.index);
+                                }
+                            });
+                        },
+                        this,
+                        'arrayChange'
+                    );
+
+                    return this;
+                },
+
+                /** @inheritdoc */
+                initConfig: function () {
+                    this._super();
+                    // the list of child components that are responsible for address rendering
+                    this.rendererComponents = [];
+
+                    return this;
+                },
+
+                /** @inheritdoc */
+                initChildren: function () {
+                    _.each(addressList(), this.createRendererComponent, this);
+
+                    return this;
+                },
+
+                /**
+           * Create new component that will render given address in the address list
+           *
+           * @param {Object} address
+           * @param {*} index
+           */
+                createRendererComponent: function (address, index) {
+                    var rendererTemplate, templateData, rendererComponent;
+
+                    if (index in this.rendererComponents) {
+                        this.rendererComponents[index].address(address);
+                    } else {
+                        // rendererTemplates are provided via layout
+                        rendererTemplate = address.getType() != undefined && this.rendererTemplates[address.getType()] != undefined ? //eslint-disable-line
+                            utils.extend({}, defaultRendererTemplate, this.rendererTemplates[address.getType()]) :
+                            defaultRendererTemplate;
+                        templateData = {
+                            parentName: this.name,
+                            name: index
+                        };
+                        rendererComponent = utils.template(rendererTemplate, templateData);
+                        utils.extend(rendererComponent, {
+                            address: ko.observable(address)
+                        });
+                        layout([rendererComponent]);
+                        this.rendererComponents[index] = rendererComponent;
+                    }
+                }
+            });
+        });
+Step 11: Create the file app\code\Tigren\AdvancedCheckout\view\frontend\web\js\view\billing-address\address-renderer\default.js
+
+      /**
+   * Copyright © Magento, Inc. All rights reserved.
+   * See COPYING.txt for license details.
+   */
+
+        define([
+            'jquery',
+            'ko',
+            'uiComponent',
+            'Magento_Checkout/js/action/select-billing-address',
+            'Magento_Checkout/js/model/quote',
+            'Tigren_AdvancedCheckout/js/model/billing-address/form-popup-state',
+            'Magento_Checkout/js/checkout-data',
+            'Magento_Customer/js/customer-data'
+        ], function ($, ko, Component, selectBillingAddressAction, quote, formPopUpState, checkoutData, customerData) {
+            'use strict';
+
+            var countryData = customerData.get('directory-data');
+
+            return Component.extend({
+                defaults: {
+                    template: 'Tigren_AdvancedCheckout/billing-address/address-renderer/default'
+                },
+
+                /** @inheritdoc */
+                initObservable: function () {
+                    this._super();
+                    this.isSelected = ko.computed(function () {
+                        var isSelected = false,
+                            billingAddress = quote.billingAddress();
+
+                        if (billingAddress) {
+                            isSelected = billingAddress.getKey() == this.address().getKey(); //eslint-disable-line eqeqeq
+                        }
+
+                        return isSelected;
+                    }, this);
+
+                    return this;
+                },
+
+                /**
+           * @param {String} countryId
+           * @return {String}
+           */
+                getCountryName: function (countryId) {
+                    return countryData()[countryId] != undefined ? countryData()[countryId].name : ''; //eslint-disable-line
+                },
+
+                /** Set selected customer shipping address  */
+                selectAddress: function () {
+                    selectBillingAddressAction(this.address());
+                    checkoutData.setSelectedBillingAddress(this.address().getKey());
+                },
+
+                /**
+           * Edit address.
+           */
+                editAddress: function () {
+                    formPopUpState.isVisible(true);
+                    this.showPopup();
+
+                },
+
+                /**
+           * Show popup.
+           */
+                showPopup: function () {
+                    $('[data-open-modal="opc-new-billing-address"]').trigger('click');
+                }
+            });
+        });
+Step 12: Create the file app\code\Tigren\AdvancedCheckout\view\frontend\web\template\address.html
+
+      <li id="shipping" class="checkout-shipping-address" data-bind="fadeVisible: visible()">
+            <div class="step-title" data-bind="i18n: 'Shipping Address'" data-role="title"></div>
+            <div id="checkout-step-shipping"
+                 class="step-content"
+                 data-role="content">
+
+                <!-- ko if: (!quoteIsVirtual) -->
+                <!-- ko foreach: getRegion('customer-email') -->
+                <!-- ko template: getTemplate() --><!-- /ko -->
+                <!--/ko-->
+                <!--/ko-->
+
+                <!-- ko foreach: getRegion('address-list') -->
+                <!-- ko template: getTemplate() --><!-- /ko -->
+                <!--/ko-->
+
+                <!-- ko foreach: getRegion('address-list-additional-addresses') -->
+                <!-- ko template: getTemplate() --><!-- /ko -->
+                <!--/ko-->
+
+                <!-- Address form pop up -->
+                <!-- ko if: (!isFormInline) -->
+                <button type="button"
+                        data-bind="click: showFormPopUp, visible: !isNewAddressAdded()"
+                        class="action action-show-popup">
+                    <span data-bind="i18n: 'New Address'"></span></button>
+                <div id="opc-new-shipping-address" data-bind="visible: isFormPopUpVisible()">
+                    <!-- ko template: 'Magento_Checkout/shipping-address/form' --><!-- /ko -->
+                </div>
+                <!-- /ko -->
+
+                <!-- ko foreach: getRegion('before-form') -->
+                <!-- ko template: getTemplate() --><!-- /ko -->
+                <!--/ko-->
+
+                <!-- Inline address form -->
+                <!-- ko if: (isFormInline) -->
+                <!-- ko template: 'Magento_Checkout/shipping-address/form' --><!-- /ko -->
+                <!-- /ko -->
+
+                <!-- ko if: (isFormInline) -->
+                <!-- /ko -->
+                <!-- Inline Billing address form -->
+                <!-- ko foreach: getRegion('billing-address') -->
+                <!-- ko template: getTemplate() --><!-- /ko -->
+                <!-- /ko -->
+            </div>
+        </li>
+
+
+        <!--Shipping method template-->
+        <li id="opc-shipping_method"
+            class="checkout-shipping-method"
+            data-bind="fadeVisible: visible(), blockLoader: isLoading"
+            role="presentation">
+            <div class="checkout-shipping-method">
+                <div class="step-title" data-bind="i18n: 'Shipping Methods'" data-role="title"></div>
+                <!-- ko foreach: getRegion('before-shipping-method-form') -->
+                <!-- ko template: getTemplate() --><!-- /ko -->
+                <!-- /ko -->
+                <div id="checkout-step-shipping_method"
+                     class="step-content"
+                     data-role="content"
+                     role="tabpanel"
+                     aria-hidden="false">
+                    <!-- ko if: rates().length  -->
+                    <form class="form methods-shipping" id="co-shipping-method-form" data-bind="submit: setShippingInformation" novalidate="novalidate">
+                        <div id="checkout-shipping-method-load">
+                            <table class="table-checkout-shipping-method">
+                                <thead>
+                                <tr class="row">
+                                    <th class="col col-method" data-bind="i18n: 'Select Method'"></th>
+                                    <th class="col col-price" data-bind="i18n: 'Price'"></th>
+                                    <th class="col col-method" data-bind="i18n: 'Method Title'"></th>
+                                    <th class="col col-carrier" data-bind="i18n: 'Carrier Title'"></th>
+                                </tr>
+                                </thead>
+                                <tbody>
+
+                                <!--ko foreach: { data: rates(), as: 'method'}-->
+                                <tr class="row" data-bind="click: $parent.selectShippingMethod">
+                                    <td class="col col-method">
+                                        <!-- ko ifnot: method.error_message -->
+                                        <!-- ko if: $parent.rates().length == 1 -->
+                                        <input class="radio"
+                                               type="radio"
+                                               data-bind="attr: {
+                                                      checked: $parent.rates().length == 1,
+                                                      'value' : method.carrier_code + '_' + method.method_code,
+                                                      'id': 's_method_' + method.method_code,
+                                                      'aria-labelledby': 'label_method_' + method.method_code + '_' + method.carrier_code + ' ' + 'label_carrier_' + method.method_code + '_' + method.carrier_code
+                                                   }" />
+                                        <!-- /ko -->
+                                        <!--ko ifnot: ($parent.rates().length == 1)-->
+                                        <input type="radio"
+                                               data-bind="
+                                                  value: method.carrier_code + '_' + method.method_code,
+                                                  checked: $parent.isSelected,
+                                                  attr: {
+                                                      'id': 's_method_' + method.carrier_code + '_' + method.method_code,
+                                                      'aria-labelledby': 'label_method_' + method.method_code + '_' + method.carrier_code + ' ' + 'label_carrier_' + method.method_code + '_' + method.carrier_code
+                                                  },
+                                                  click: $parent.selectShippingMethod"
+                                               class="radio"/>
+                                        <!--/ko-->
+                                        <!-- /ko -->
+                                    </td>
+                                    <td class="col col-price">
+                                        <!-- ko foreach: $parent.getRegion('price') -->
+                                        <!-- ko template: getTemplate() --><!-- /ko -->
+                                        <!-- /ko -->
+                                    </td>
+
+                                    <td class="col col-method"
+                                        data-bind="text: method.method_title, attr: {'id': 'label_method_' + method.method_code + '_' + method.carrier_code}"></td>
+
+                                    <td class="col col-carrier"
+                                        data-bind="text: method.carrier_title, attr: {'id': 'label_carrier_' + method.method_code + '_' + method.carrier_code}"></td>
+                                </tr>
+
+                                <!-- ko if:  method.error_message -->
+                                <tr class="row row-error">
+                                    <td class="col col-error" colspan="4">
+                                        <div class="message error">
+                                            <div data-bind="text: method.error_message"></div>
+                                        </div>
+                                        <span class="no-display">
+                                            <input type="radio" data-bind="attr: {'value' : method.method_code, 'id': 's_method_' + method.method_code}"/>
+                                        </span>
+                                    </td>
+                                </tr>
+                                <!-- /ko -->
+
+                                <!-- /ko -->
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div id="onepage-checkout-shipping-method-additional-load">
+                            <!-- ko foreach: getRegion('shippingAdditional') -->
+                            <!-- ko template: getTemplate() --><!-- /ko -->
+                            <!-- /ko -->
+                        </div>
+                        <!-- ko if: errorValidationMessage().length > 0 -->
+                        <div class="message notice">
+                            <span><!-- ko text: errorValidationMessage()--><!-- /ko --></span>
+                        </div>
+                        <!-- /ko -->
+                        <div class="actions-toolbar" id="shipping-method-buttons-container">
+                            <div class="primary">
+                                <button data-role="opc-continue" type="submit" class="button action continue primary">
+                                    <span><!-- ko i18n: 'Next'--><!-- /ko --></span>
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                    <!-- /ko -->
+                    <!-- ko ifnot: rates().length > 0 --><div class="no-quotes-block"><!-- ko i18n: 'Sorry, no quotes are available for this order at this time'--><!-- /ko --></div><!-- /ko -->
+                </div>
+            </div>
+        </li>
+Step 13: Create the file app\code\Tigren\AdvancedCheckout\view\frontend\web\template\billing.html
+
+      <div class="checkout-billing-address">
+            <!-- ko foreach: getRegion('billing-address-list') -->
+            <!-- ko template: getTemplate() --><!-- /ko -->
+            <!--/ko-->
+
+            <!-- Inline address form -->
+            <render if="isFormInline" args="billingFormTemplate"/>
+        </div>
+
+        <!-- Address form pop up -->
+        <if args="!isFormInline">
+            <button type="button"
+                    class="action action-show-popup"
+                    click="showFormPopUp"
+                    visible="!isNewAddressAdded()">
+                <span translate="'New Address'"/>
+            </button>
+            <div id="opc-new-billing-address"
+                 visible="isFormPopUpVisible()"
+                 render="billingFormTemplate"/>
+        </if>
+Step 14: create file app\code\Tigren\AdvancedCheckout\view\frontend\web\template\billing-address.html
+
+      <div class="checkout-billing-address">
+            <div class="billing-address-same-as-shipping-block field choice" data-bind="visible: canUseShippingAddress()">
+                <input type="checkbox" name="billing-address-same-as-shipping"
+                       data-bind="checked: isAddressSameAsShipping, click: useShippingAddress, attr: {id: 'billing-address-same-as-shipping'}"/>
+                <label data-bind="attr: {for: 'billing-address-same-as-shipping'}">
+                    <span data-bind="i18n: 'This address is also my billing address'"></span>
+                </label>
+            </div>
+            <fieldset class="fieldset">
+                <!-- ko template: 'Tigren_AdvancedCheckout/billing-address/list' --><!-- /ko -->
+                <!-- ko template: 'Tigren_AdvancedCheckout/billing-address/form' --><!-- /ko -->
+            </fieldset>
+        </div>
+Step 15: create file app\code\Tigren\AdvancedCheckout\view\frontend\web\template\shipping.html
+
+      <!--
+  /**
+   * Copyright © Magento, Inc. All rights reserved.
+   * See COPYING.txt for license details.
+   */
+  -->
+        <li id="shipping" class="checkout-shipping-address" data-bind="fadeVisible: visible()">
+            <div class="step-title" translate="'Shipping Address'" data-role="title" />
+            <div id="checkout-step-shipping"
+                 class="step-content"
+                 data-role="content">
+
+                <each if="!quoteIsVirtual" args="getRegion('customer-email')" render="" />
+                <each args="getRegion('address-list')" render="" />
+                <each args="getRegion('address-list-additional-addresses')" render="" />
+
+                <!-- Address form pop up -->
+                <if args="!isFormInline">
+                    <button type="button"
+                            class="action action-show-popup"
+                      click="showFormPopUp"
+                      visible="!isNewAddressAdded()">
+                        <span translate="'New Address'" />
+                    </button>
+                    <div id="opc-new-shipping-address"
+                   visible="isFormPopUpVisible()"
+                   render="shippingFormTemplate" />
+                </if>
+
+                <each args="getRegion('before-form')" render="" />
+
+                <!-- Inline address form -->
+                <render if="isFormInline" args="shippingFormTemplate" />
+
+                <div class="step-title" translate="'Billing Address'" data-role="title" />
+
+                <div id="billing-address-container">
+                    <div class="billing-address-same-as-shipping-block field choice">
+                        <input type="checkbox" name="billing-address-same-as-shipping"
+                               data-bind="checked: isAddressSameAsShipping, click: useShippingAddress, attr: {id: 'billing-address-same-as-shipping-shared'}"/>
+                        <label data-bind="attr: {for: 'billing-address-same-as-shipping-shared'}"><span
+                                data-bind="i18n: 'Billing address is same as Delivery address (uncheck if you wish to use difference address).'"></span></label>
+                    </div>
+                    <div class="form-billing-address" data-bind="visible: isShowBillingForm">
+                        <each args="getRegion('billing-address')" render=""/>
+                    </div>
+                </div>
+            </div>
+        </li>
+
+        <!--Shipping method template-->
+        <li id="opc-shipping_method"
+            class="checkout-shipping-method"
+            data-bind="fadeVisible: visible(), blockLoader: isLoading"
+      role="presentation">
+            <div class="checkout-shipping-method">
+                <div class="step-title"
+               translate="'Shipping Methods'"
+                     data-role="title" />
+
+                <each args="getRegion('before-shipping-method-form')" render="" />
+
+                <div id="checkout-step-shipping_method"
+                     class="step-content"
+                     data-role="content"
+               role="tabpanel"
+               aria-hidden="false">
+                    <form id="co-shipping-method-form"
+                          class="form methods-shipping"
+                    if="rates().length"
+                    submit="setShippingInformation"
+                          novalidate="novalidate">
+
+                        <render args="shippingMethodListTemplate"/>
+
+                        <div id="onepage-checkout-shipping-method-additional-load">
+                            <each args="getRegion('shippingAdditional')" render="" />
+                        </div>
+                        <div role="alert"
+                       if="errorValidationMessage().length"
+                             class="message notice">
+                            <span text="errorValidationMessage()" />
+                        </div>
+                        <div class="actions-toolbar" id="shipping-method-buttons-container">
+                            <div class="primary">
+                                <button data-role="opc-continue" type="submit" class="button action continue primary">
+                                    <span translate="'Next'" />
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                    <div class="no-quotes-block"
+                   ifnot="rates().length > 0"
+                   translate="'Sorry, no quotes are available for this order at this time'" />
+                </div>
+            </div>
+        </li>
+Step 16: Create the file app\code\Tigren\AdvancedCheckout\view\frontend\web\template\billing-address\list.html
+
+      <!-- ko if: (customerHasAddresses && isAddressFormListVisible)-->list
+        <div class="field field-select-billing">
+            <div class="control" data-bind="if: (addressOptions.length > 1)">
+                <select class="select" id="billing_address_id" name="billing_address_id" data-bind="
+          options: addressOptions,
+          optionsText: addressOptionsText,
+          optionsValue: 'customerAddressId',
+          value: selectedAddress,
+          event: {change: onAddressChange(selectedAddress())};
+      "></select>
+            </div>
+        </div>
+        <!-- /ko -->
+Step 17: Create the file app\code\Tigren\AdvancedCheckout\view\frontend\web\template\billing-address\form.html
+
+      <div class="billing-address-form" data-bind="fadeVisible: isAddressFormVisible">
+                <!-- ko foreach: getRegion('before-fields') -->
+                <!-- ko template: getTemplate() --><!-- /ko -->
+                <!--/ko-->
+                <fieldset id="billing-new-address-form" class="fieldset address">
+                    <!-- ko foreach: getRegion('additional-fieldsets') -->
+                    <!-- ko template: getTemplate() --><!-- /ko -->
+                    <!--/ko-->
+                    <!-- ko if: (isCustomerLoggedIn) -->
+                    <div class="field save-address">
+                        <input type="checkbox" class="checkbox" id="billing-save-in-address-book" data-bind="checked: saveInAddressBook" />
+                        <label class="label" for="billing-save-in-address-book">
+                            <span data-bind="i18n: 'Save in address book'"></span>
+                        </label>
+                    </div>
+                    <!-- /ko -->
+                </fieldset>
+            </div>
+        </div>
+Step 18: create file app\code\Tigren\AdvancedCheckout\view\frontend\web\template\billing-address\custom-list.html
+
+      <!-- ko if: (visible)-->
+        <div class="field addresses">
+            <div class="control">
+                <div class="billing-address-items">
+                    <!-- ko foreach: { data: elems, as: 'element' } -->
+                    <!-- ko template: element.getTemplate() --><!-- /ko -->
+                    <!-- /ko -->
+                </div>
+            </div>
+        </div>
+        <!-- /ko -->
+Step 19: Create the file app\code\Tigren\AdvancedCheckout\view\frontend\requirejs-config.js
+
+      var config = {
+      config: {
+          mixins: {
+                    'Magento_Checkout/js/view/shipping': {
+                        'Tigren_AdvancedCheckout/js/view/shipping': true
+                    },
+                }
+            }
+        };
+
+
+
+
+
+
+
+
+
+
+
+

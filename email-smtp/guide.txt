@@ -1,0 +1,15 @@
+https://magento.stackexchange.com/questions/179203/magento-2-override-extend-the-email-css-that-is-being-used-in-the-transactional
+
+~~~~~~~~~~~~~~~~~~~~~~
+The general steps :
+
+Create a Magento 2 frontend theme
+Upload your custom logo here : app/design/frontend/Vendor/Theme/Magento_Email/web/logo_email.png
+Edit the header and footer parts here : app/design/frontend/Vendor/Theme/Magento_Email/email/header.html and app/design/frontend/Vendor/Theme/Magento_Email/email/footer.html
+Edit the sales email templates for example here : app/design/frontend/Vendor/Theme/Magento_Sales/email/order_new.html
+Add your custom styles here for common emails : app/design/frontend/Vendor/Theme/web/css/source/_email-extend.less
+Add your custom less variables here for common emails : app/design/frontend/Vendor/Theme/web/css/source/_email-variables.less
+Add your custom styles here for sales emails : app/design/frontend/Vendor/Theme/Magento_Sales/web/css/source/_email.less
+
+~~~~~~~~~~~~~~~~~~~~~~~~~
+https://support.shippingeasy.com/hc/en-us/articles/204647385-How-are-the-variables-on-my-Email-templates-mapped-

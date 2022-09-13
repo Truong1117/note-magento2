@@ -1,0 +1,1 @@
+Admin Panel -> Stores -> Configuration -> Customers -> Customers Configuration -> Captcha

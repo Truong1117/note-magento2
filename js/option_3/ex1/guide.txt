@@ -1,0 +1,11 @@
+In web: begadi-m2-prelive.local
+
+option 3:
+
+/app/code/Commercer/MasterExport/view/adminhtml/templates/master_export.phtml
+
+
+/app/code/Commercer/MasterExport/view/adminhtml/requirejs-config.js
+
+
+/app/code/Commercer/MasterExport/view/adminhtml/web/js/master_export.js

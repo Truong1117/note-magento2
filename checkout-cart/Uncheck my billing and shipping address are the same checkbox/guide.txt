@@ -1,0 +1,66 @@
+https://magento.stackexchange.com/questions/160020/magento-2-uncheck-my-billing-and-shipping-address-are-the-same-checkbox-in-che/206092
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+2. Create a file app/code/Vendor/Module/view/frontend/requirejs-config.js with the content:
+
+var config = {
+ map: {
+ '*': {
+   'Magento_Checkout/js/model/checkout-data-resolver': 'Vendor_Module/js/checkout-data-resolver',
+   'Magento_Checkout/js/model/shipping-save-processor/default': 'Vendor_Module/js/shipping-save-processor/default'
+  }
+}};
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+3. Copy file vendor/magento/module-checkout/view/frontend/web/js/model/checkout-data-resolver.js to 
+app/code/Vendor/Module/view/frontend/web/js/checkout-data-resolver.js.
+
+4. Edit file app/code/Vendor/Module/view/frontend/web/js/checkout-data-resolver.js and comment out code around line 231:
+
+ applyBillingAddress: function () {
+        var shippingAddress;
+
+        if (quote.billingAddress()) {
+            selectBillingAddress(quote.billingAddress());
+
+            return;
+        }
+        shippingAddress = quote.shippingAddress();
+
+        /*if (shippingAddress &&
+            shippingAddress.canUseForBilling() &&
+            (shippingAddress.isDefaultShipping() || !quote.isVirtual())
+        ) {
+            selectBillingAddress(quote.shippingAddress());
+        }*/
+    }
+};
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+5. Copy file vendor/magento/module-checkout/view/frontend/web/js/model/shipping-save-processor/default.js to 
+app/code/Vendor/Module/view/frontend/web/js/shipping-save-processor/default.js.
+
+
+6. In app/code/Vendor/Module/view/frontend/web/js/shipping-save-processor/default.js comment out code around line 34:
+
+saveShippingInformation: function () {
+var payload;
+
+/*if (!quote.billingAddress()) {
+    selectBillingAddressAction(quote.shippingAddress());
+}*/
+
+payload = {
+
+7. Delete folder pub/static/frontend:
+
+rm -rf pub/static/frontend
+
+8. Regenerate static content:
+
+ php bin/magento setup:static-content:deploy
+
+9.Clear magento cache and you are all set.
+

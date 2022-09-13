@@ -1,0 +1,40 @@
+***
+Overview of creating invoice programmatically in Magento 2
+***
+~ Step 1: Declare event sales_order_invoice_pay
+~ Step 2: Setup the observer class
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Step 1: Declare event sales_order_invoice_pay
+Start the settings with events.xml file in your custom module: 
+/app/code/Mageplaza/HelloWorld/etc/events.xml
+<?xml version="1.0"?>
+    <event name="sales_order_invoice_pay">
+        <observer name="webpos_sales_order_invoice_pay" instance="Mageplaza\HelloWorld\Observer\SalesOrderInvoicePay" />
+    </event>  
+</config>
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Step 2: Setup the observer class
+/app/code/Mageplaza/HelloWorld/Observer/SalesOrderInvoicePay.php
+
+<?php
+namespace Mageplaza\HelloWorld\Observer\Sales;
+use Magento\Framework\Event\Observer as EventObserver;
+use Magento\Framework\Event\ObserverInterface;
+class SalesOrderInvoicePay implements ObserverInterface
+{   
+/**
+* @param EventObserver $observer
+* @return $this
+*/
+public function execute(EventObserver $observer)
+{
+     $invoice = $observer->getEvent()->getInvoice();
+     $order = $invoice->getOrder();
+   
+     /* reset total_paid & base_total_paid of order */
+     $order->setTotalPaid($order->getTotalPaid() - $invoice->getGrandTotal());
+     $order->setBaseTotalPaid($order->getBaseTotalPaid() - $invoice->getBaseGrandTotal());
+}    
+}

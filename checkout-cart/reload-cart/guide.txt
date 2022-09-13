@@ -1,0 +1,17 @@
+define([
+    'jquery',
+    'Magento_Customer/js/customer-data',
+    'Magento_Checkout/js/action/get-totals'
+], function ($,customerData,getTotalsAction) {
+    'use strict';
+
+    var checkoutConfig = window.checkoutConfig,
+    deferred,
+    rewardComponent
+
+ reloadCartAndQuoteTotal: function () {
+            customerData.reload(['cart', 'messages'], true);
+            deferred = $.Deferred();
+            getTotalsAction([], deferred);
+        },
+;

@@ -1,0 +1,104 @@
+How to Get List Products from Catalog Rule Condition in Magento 2
+
+~~~~~~~~~~~~~~~~~~~~~
+Getting list product from catalog rule condition in Magento 2 is the method helping you create and observe 
+the all promotions. In Magento 2 store, there are two types of promotion rules you can set: 
+Catalog Rule and Shopping Cart Rule, however, we all will refer to the catalog rule. Depending on your needs, 
+you are allowed to generate multiple catalog promotion rule and apply a variety of conditions for each one.
+
+Below is the detailed guides to how to get list products from catalog rule condition by creating a class 
+in the \Magento\Rule\Model\AbstractModel
+
+<?php
+ 
+namespace Mageplaza\HelloWorld\Model;
+class Rule extends \Magento\Rule\Model\AbstractModel
+{
+   protected $_productIds;
+/**
+* Get array of product ids which are matched by rule
+*
+* @return array
+*/
+public function getListProductIdsInRule()
+{
+     $productCollection = \Magento\Framework\App\ObjectManager::getInstance()->create(
+         '\Magento\Catalog\Model\ResourceModel\Product\Collection'
+     );
+     $productFactory = \Magento\Framework\App\ObjectManager::getInstance()->create(
+         '\Magento\Catalog\Model\ProductFactory'
+     );
+     $this->_productIds = [];
+     $this->setCollectedAttributes([]);
+     $this->getConditions()->collectValidatedAttributes($productCollection);
+     \Magento\Framework\App\ObjectManager::getInstance()->create(
+         '\Magento\Framework\Model\ResourceModel\Iterator'
+     )->walk(
+         $this->_productCollection->getSelect(),
+         [[$this, 'callbackValidateProduct']],
+         [
+             'attributes' => $this->getCollectedAttributes(),
+             'product' => $productFactory->create()
+         ]
+     );
+     return $this->_productIds;
+}
+/**
+* Callback function for product matching
+*
+* @param array $args
+* @return void
+*/
+public function callbackValidateProduct($args)
+{
+     $product = clone $args['product'];
+     $product->setData($args['row']);
+     $websites = $this->_getWebsitesMap();
+     foreach ($websites as $websiteId => $defaultStoreId) {
+         $product->setStoreId($defaultStoreId);
+         if ($this->getConditions()->validate($product)) {
+             $this->_productIds[] = $product->getId();
+         }
+     }
+}
+/**
+* Prepare website map
+*
+* @return array
+*/
+protected function _getWebsitesMap()
+{
+     $map = [];
+     $websites = \Magento\Framework\App\ObjectManager::getInstance()->create(
+         '\Magento\Store\Model\StoreManagerInterface'
+     )->getWebsites();
+     foreach ($websites as $website) {
+         // Continue if website has no store to be able to create catalog rule for website without store
+         if ($website->getDefaultStore() === null) {
+             continue;
+         }
+         $map[$website->getId()] = $website->getDefaultStore()->getId();
+     }
+     return $map;
+}
+}
+
+~ The code snippet is the greatest choice so that you can get the list product from Catalog Rule Condition 
+with ease. Hope this is the helpful topic to achieve the better results when you run Magento 2 platform 
+on your ecommerce store.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

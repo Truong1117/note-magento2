@@ -1,0 +1,16 @@
+***
+Create product programmatically - Simple,
+Configurable, Downloadable, Bundle
+***
+In this tutorial you can create the following types of product:
+~ Simple
+~ Configurable
+~ Downloadable
+~ Bundle
+
+~~~~~~~~~~~~~~~~~~~~~~~~
+4 Steps to create configurable product programmatically:
+~ Step 1: To create Simple product programmatically
+~ Step 2: Add an image to product
+~ Step 3: Add custom options to the product
+~ Step 4: How to assign associated products

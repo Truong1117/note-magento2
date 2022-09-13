@@ -1,0 +1,22 @@
+    public function getService($productId = null){
+        // TODO recheck attribute option label per store
+
+//        $storeId = $this->_storeManager->getStore()->getId();
+
+        $productFactory = $this->_productFactory->create()->getById($productId);
+        $connection = $this->_resource->getConnection();
+        $tableName = $this->_resource->getTableName('eav_attribute_option_value');
+        $optionId = $productFactory->getData('uebersicht_seite_preis_label');
+        if(!$optionId){
+            return '';
+        }
+        $sql = "SELECT * FROM " . $tableName . " WHERE option_id = ".$optionId." AND store_id = 0;" ;
+        $result = $connection->fetchAll($sql);
+        return $result[0]['value'];
+    }
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+<?php $helper = $this->helper('\Commercers\PriceProduct\Helper\Data'); ?>
+<?php foreach ($_productCollection as $_product) : ?>
+    <?php
+    $valAttr = $helper->getService($_product->getEntityId());
+    ?>

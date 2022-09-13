@@ -1,0 +1,17 @@
+~ m2: /root/pub/index.php
+
+link: https://blog.landofcoder.com/magento-2-multiple-stores-guide/
+
+ $params = $_SERVER;
+
+ $params[\Magento\Store\Model\StoreManager::PARAM_RUN_CODE] = 'ploma_landing'; //Webite code as same in admin panel
+
+ $params[\Magento\Store\Model\StoreManager::PARAM_RUN_TYPE] = 'website';
+
+ $bootstrap = \Magento\Framework\App\Bootstrap::create(BP, $params);
+
+ /** @var \Magento\Framework\App\Http $app */
+
+ $app = $bootstrap->createApplication('Magento\Framework\App\Http');
+
+ $bootstrap->run($app);

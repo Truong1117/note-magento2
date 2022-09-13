@@ -1,0 +1,14 @@
+user: Truongdong
+pass: Truong1233213
+http://m2-truongdong.local/admin_1isu0z/
+/var/www/html/m2_truongdong/app/etc/env.php
+
+~~~~~~~~~~~~~~~~~~~~
+begadi-m2-live.local
+
+http://http://begadi-m2-live.local/admin_ncga2t/
+/var/www/html/begadi-m2-live.local/app/etc/env.php
+
+user: truongdong
+
+pass: @Nt1h4ck

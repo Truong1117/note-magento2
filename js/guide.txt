@@ -1,0 +1,138 @@
+https://devdocs.magento.com/guides/v2.4/javascript-dev-guide/javascript/js-resources.html
+
+I. JS resources location
+
+In Magento, you can find Javascript components on the following levels:
+
+~ Library level (lib/web). Resources located here are available in any place within Magento.
+
+~ Module level (<module_dir>/view/<areaname>/web). If the module is enabled, resources added here are available in other modules and themes.
+
+~ Theme level, for a particular module (<theme_dir>/<VendorName>_<ModuleName>/web). Resources added here are available for [inheriting] themes.
+
+~ Theme level (<theme_dir>/web). Resources added here are available for inheriting themes.
+
+Note: The library level can only contain core Magento resources. Do not put custom JS files in the `lib/web` directory.
+
+II. Accessing JS resources
+
+JS resources are accessed using relative paths.
+
+Example 1:
+
+~ File actual location: app/code/Magento/ConfigurableProduct/view/frontend/web/js/configurable.js
+
+~ File published to pub/static:
+
+pub/static/frontend/Magento/<theme>/<locale>/Magento_ConfigurableProduct/js/configurable.js. 
+Here <theme> and <locale> are the currently applied in your instance theme and locale.
+
+~ Called in script:
+
+ require(["Magento_ConfigurableProduct/js/configurable"], function(Configurable){
+ });
+
+Example 2:
+
+~ File actual location: 
+
+app/design/frontend/Magento/blank/Magento_Theme/web/js/theme.js
+
+~ File published to pub/static: 
+
+pub/static/frontend/Magento/blank/<locale>/Magento_Theme/js/theme.js
+
+~ Called in script:
+
+require(["Magento_Theme/js/theme"], function(){
+});
+
+Example 3:
+
+~ File actual location: lib/web/jquery.js
+
+~ File published to pub/static: pub/static/<area>/Magento/<theme>/<locale>/jquery.js
+
+~ Called in script:
+
+ require(["jquery"], function($){
+ });
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+III. Dependencies between JavaScript resources
+
+To build a dependency on the third-party plugin, specify a shim in the following configuration files:
+
+~ requirejs-config.js
+
+var config = {
+     "shim": {
+        "3-rd-party-plugin": ["jquery"]
+     }
+ };
+
+~ <third-party-plugin>.js
+
+ !(function($){
+     // plugin code
+     // where $ == jQuery
+ })(jQuery);
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+IV. RequireJS library
+
+Including RequireJS
+
+To be available for the entire Magento instance, RequireJS library is included in the following layout files:
+
+~ For the adminhtml area:
+
+app/code/Magento/Backend/view/adminhtml/layout/default.xml
+
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" layout="admin-1column" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+     <head>
+         <title>Magento Admin</title>
+         <meta name="viewport" content="width=1024"/>
+         <meta name="format-detection" content="telephone=no"/>
+         <!-- Here's the library included -->
+         <link src="requirejs/require.js"/>
+         <css src="extjs/resources/css/ext-all.css"/>
+         <css src="extjs/resources/css/ytheme-magento.css"/>
+     </head>
+     <body>
+         <attribute name="id" value="html-body"/>
+         <!-- Here's the basic configuration file require_js.phtml specified -->
+         <block name="require.js" class="Magento\Backend\Block\Page\RequireJs" template="Magento_Backend::page/js/require_js.phtml"/>
+         <referenceContainer name="global.notices">
+             <block class="Magento\Backend\Block\Page\Notices" name="global_notices" as="global_notices" template="Magento_Backend::page/notices.phtml"/>
+         </referenceContainer>
+         <referenceContainer name="header">
+             ...
+         </referenceContainer>
+         <referenceContainer name="after.body.start">
+             <!-- Here's the main configuration file requirejs-config.js specified -->
+             <block class="Magento\RequireJs\Block\Html\Head\Config" name="requirejs-config"/>
+             <block class="Magento\Translation\Block\Html\Head\Config" name="translate-config"/>
+             <block class="Magento\Translation\Block\Js" name="translate" template="Magento_Translation::translate.phtml"/>
+             <block class="Magento\Framework\View\Element\Js\Components" name="head.components" as="components" template="Magento_Backend::page/js/components.phtml"/>
+             <block class="Magento\Framework\View\Element\Html\Calendar" name="head.calendar" as="calendar" template="Magento_Backend::page/js/calendar.phtml"/>
+         </referenceContainer>
+     </body>
+ </page>
+
+~ For the frontend area, the equivalent configuration is located in app/code/Magento/Theme/view/frontend/layout/default.xml. 
+
+
+
+
+
+
+
+
+
+
+
+
+
+

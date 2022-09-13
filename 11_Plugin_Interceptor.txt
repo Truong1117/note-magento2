@@ -1,0 +1,228 @@
+***
+Plugin - Interceptor
+***
+Table of contents
+~ Benefits of Magento 2 Plugin
+~ Magento 2 plugin’s restriction
+~ Guide for creating Magento 2 new plugin
+	~~ Declaring a plugin in Magento 2
+	~~ Explainations
+	~~ Defining a plugin in Magento 2
+	~~ Before methods
+	~~ After methods
+	~~ Around methods
+	~~ Check the result
+~ Set priority for plugins
+~ Magento 2 plugin example
+~~~~~~~~~~~~~~~~~~~~
+1. Guide for creating Magento 2 new plugin
+1.1 Declaring a plugin in Magento 2
+When setting up a new plugin for a class object, it will be defined in the di.xml file at:
+app/code/{namespace}/{module}/etc/di.xml.
+<config>
+    <type name="{ObservedType}">
+        <plugin name="{pluginName}" type="{PluginClassName}" sortOrder="1" disabled="false"/>
+    </type>
+</config>
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+1.2 Explainations
+1.2.1 Required options
+~ type name: Enter name of a class or interface that needs to be followed.
+~ plugin name: An arbitrary plugin name that identifies a plugin. Also used to merge the configurations for the plugin.
+~ plugin type: Fill the name of a plugin’s class or its virtual type. You can refer the following naming convention for this field: \Vendor\Module\Plugin\<ModelName>Plugin.
+
+1.2.2 Optional options
+~ plugin sortOrder: Set order when the plugin calls the other same methods in the process.
+~ plugin disabled: That allows you enable or disable a plugin quickly. As the default configuration, the chosen value is false. Use this property to disable core or third-party plugins in your di.xml file.
+
+As the following example, we will edit app\code\Mageplaza\HelloWorld\etc\di.xml, you need to insert the snippet:
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../../../lib/internal/Magento/Framework/ObjectManager/etc/config.xsd">
+    <type name="Mageplaza\HelloWorld\Controller\Index\Example">
+        <plugin name="Mageplaza_HelloWorld_Plugin" type="Mageplaza\HelloWorld\Plugin\ExamplePlugin" sortOrder="10" disabled="false"  />
+    </type>
+</config>
+
+For example, the following code define type name, we created Example.php file at app/code/Mageplaza/HelloWorld/Controller/Index/
+<?php
+
+namespace Mageplaza\HelloWorld\Controller\Index;
+
+class Example extends \Magento\Framework\App\Action\Action
+{
+
+	protected $title;
+
+	public function execute()
+	{
+		echo $this->setTitle('Welcome');
+		echo $this->getTitle();
+	}
+
+	public function setTitle($title)
+	{
+		return $this->title = $title;
+	}
+
+	public function getTitle()
+	{
+		return $this->title;
+	}
+}
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+1.3 Defining a plugin
+~ A plugin is a great way to expand or edit a public method’s behavior by using code before, after or around method.
+
+~ 3 methods in Plugin:
+	~ before - beforeDispatch()
+	~ around - aroundDispatch()
+	~ after - afterDispatch()
+
+~ Before methods:
+<?php
+
+namespace Mageplaza\HelloWorld\Plugin;
+
+class ExamplePlugin
+{
+
+	public function beforeSetTitle(\Mageplaza\HelloWorld\Controller\Index\Example $subject, $title)
+	{
+		$title = $title . " to ";
+		echo __METHOD__ . "</br>";
+
+		return [$title];
+	}
+
+}
+
+~ After methods:
+<?php
+
+namespace Mageplaza\HelloWorld\Plugin;
+
+class ExamplePlugin
+{
+
+	public function afterGetTitle(\Mageplaza\HelloWorld\Controller\Index\Example $subject, $result)
+	{
+
+		echo __METHOD__ . "</br>";
+
+		return '<h1>'. $result . 'Mageplaza.com' .'</h1>';
+
+	}
+
+}
+
+~ Around methods:
+<?php
+
+namespace Mageplaza\HelloWorld\Plugin;
+
+class ExamplePlugin
+{
+
+
+	public function aroundGetTitle(\Mageplaza\HelloWorld\Controller\Index\Example $subject, callable $proceed)
+	{
+
+		echo __METHOD__ . " - Before proceed() </br>";
+		 $result = $proceed();
+		echo __METHOD__ . " - After proceed() </br>";
+
+
+		return $result;
+	}
+
+}
+
+~ Check the result:
+All content of ExamplePlugin.php
+<?php
+
+namespace Mageplaza\HelloWorld\Plugin;
+
+class ExamplePlugin
+{
+
+	public function beforeSetTitle(\Mageplaza\HelloWorld\Controller\Index\Example $subject, $title)
+	{
+		$title = $title . " to ";
+		echo __METHOD__ . "</br>";
+
+		return [$title];
+	}
+
+
+	public function afterGetTitle(\Mageplaza\HelloWorld\Controller\Index\Example $subject, $result)
+	{
+
+		echo __METHOD__ . "</br>";
+
+		return '<h1>'. $result . 'Mageplaza.com' .'</h1>';
+
+	}
+
+
+	public function aroundGetTitle(\Mageplaza\HelloWorld\Controller\Index\Example $subject, callable $proceed)
+	{
+
+		echo __METHOD__ . " - Before proceed() </br>";
+		 $result = $proceed();
+		echo __METHOD__ . " - After proceed() </br>";
+
+
+		return $result;
+	}
+
+}
+
+
+~ applying the below code to identify a parameter of type SomeType which is nullable:
+<?php
+namespace Mageplaza\HelloWorld\Model;
+
+class MyUtility
+{
+    public function save(SomeType $obj = null)
+    {
+        //do something
+    }
+}
+
+~ If you wrapped this method with a plugin like below:
+<?php
+namespace Mageplaza\HelloWorld\Plugin;
+
+class MyUtilityPlugin
+{
+    public function aroundSave(\Mageplaza\HelloWorld\Model\MyUtility $subject, \callable $proceed, SomeType $obj)
+    {
+      //do something
+    }
+}
+
+~  If not concern the arguments, please use the variadics and argument unpacking to complete this:
+<?php
+namespace Mageplaza\HelloWorld\Plugin;
+
+class MyUtilityPlugin
+{
+    public function aroundSave(\Mageplaza\HelloWorld\Model\MyUtility $subject, \callable $proceed, ...$args)
+    {
+      //do something
+      $proceed(...$args);
+    }
+}
+
+~~~~~~~~~~~~~~~~~~~~~~~~~
+2. Set priority(uu tien) for plugins
+sortOrder option allow placing the plugins which are observing the same method in a queue. 
+When before, after, or around methods start calling, the plugins are applied one by one.
+
+Magento 2 plugin example:
+Visit https://github.com/mageplaza/magento2-samples/tree/master/sample-module-interception
+
+

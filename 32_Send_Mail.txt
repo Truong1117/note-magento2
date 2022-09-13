@@ -1,0 +1,272 @@
+***
+Send Mail Template
+***
+
+1. Create Controller call sendmail
+app\etc\adminhtml\menu.xml
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Backend:etc/menu.xsd">
+    <menu>
+        <add id="Mageplaza_HelloWorld::sendmail" title="Send Mail Valid" module="Mageplaza_HelloWorld" sortOrder="14" action="mageplaza_helloworld/post/sendmail" resource="Mageplaza_HelloWorld::sendmail" parent="Mageplaza_HelloWorld::helloworld"/>
+    </menu>
+</config>
+
+~~~~~~~~~
+2. app\Controller\Adminhtml\Post\SendMail.php
+<?php
+
+namespace Mageplaza\HelloWorld\Controller\Adminhtml\Post;
+
+use Magento\Backend\App\Action;
+use Magento\Framework\Event\ObserverInterface;
+use Mageplaza\HelloWorld\Helper\Email;
+
+class SendMail extends Action
+{
+    private $helperEmail;
+
+    public function __construct(
+        \Magento\Backend\App\Action\Context $context,
+        \Magento\Framework\View\Result\PageFactory $resultPageFactory,
+        Email $helperEmail
+    ) {
+        parent::__construct($context);
+        $this->resultPageFactory = $resultPageFactory;
+        $this->helperEmail = $helperEmail;
+    }
+
+    public function execute()
+    {
+        $data['phone'] = '0932505591';
+        $data['message'] = 'Bai hat nay khong co quang cao. Khong co anh doi em chac cung chang sao.';
+        $data['name'] = 'Dong Truong';
+        $data['email'] = 'dongvantruong1117@gmail.com';
+        $resultRedirect = $this->resultRedirectFactory->create();
+        
+        try {
+            $this->helperEmail->sendEmailHelloWorldInvalid($data);
+            $this->messageManager->addSuccessMessage(__('You send mail success.'));
+            return $resultRedirect->setPath('mageplaza_helloworld/post/index');
+        } catch (\Exception $e) {
+            $this->messageManager->addErrorMessage($e->getMessage());
+            $this->messageManager->addExceptionMessage($e, __('Something went wrong while saving the record.'));
+        }
+        return $resultRedirect->setPath('mageplaza_helloworld/post/index');
+    }
+}
+
+~~~~~~~~~~~~~~~~~~~~
+3. app\Helper\Email.php
+<?php
+
+namespace Mageplaza\HelloWorld\Helper;
+
+use Magento\Framework\App\Helper\AbstractHelper;
+use Magento\Customer\Model\Session as CustomerSession;
+use Magento\Framework\Exception\MailException;
+use Magento\Framework\App\Helper\Context;
+use Magento\Framework\Translate\Inline\StateInterface;
+use Magento\Framework\Mail\Template\TransportBuilder;
+use Magento\Framework\Message\ManagerInterface;
+use Magento\Store\Model\StoreManagerInterface;
+use Magento\Framework\UrlInterface;
+
+class Email extends AbstractHelper
+{
+    const EMAIL_APPROVAL_INVALID = 'helloworld/email/email_template_invalid';
+    /**
+     * @var StateInterface
+     */
+    protected $_inlineTranslation;
+
+    /**
+     * @var TransportBuilder
+     */
+    protected $_transportBuilder;
+
+    /**
+     * @var CustomerSession
+     */
+    protected $_customerSession;
+
+    /**
+     * @var StoreManagerInterface
+     */
+    protected $_storeManager;
+
+    /**
+     * @var UrlInterface
+     */
+    protected $_url;
+
+    protected $_template;
+
+    protected $_messageManager;
+
+    public function __construct(
+        Context $context,
+        StateInterface $inlineTranslation,
+        TransportBuilder $transportBuilder,
+        ManagerInterface $messageManager,
+        StoreManagerInterface $storeManager,
+        CustomerSession $customerSession,
+        UrlInterface $url
+    ) {
+        parent::__construct($context);
+        $this->_inlineTranslation = $inlineTranslation;
+        $this->_transportBuilder = $transportBuilder;
+        $this->_customerSession = $customerSession;
+        $this->_storeManager = $storeManager;
+        $this->_messageManager = $messageManager;
+        $this->_url = $url;
+    }
+
+    protected function getConfigValue($path, $storeId)
+    {
+        return $this->scopeConfig->getValue(
+            $path,
+            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+            $storeId
+        );
+    }
+
+    protected function getTemplateId($xmlPath)
+    {
+        return $this->getConfigValue($xmlPath, $this->_storeManager->getStore()->getId());
+    }
+
+    protected function generateTemplate($emailTemplateVariables, $senderInfo, $receiverInfo)
+    {
+        // var_dump($emailTemplateVariables);exit;
+        $template = $this->_transportBuilder->setTemplateIdentifier($this->_template)
+            ->setTemplateOptions(
+                [
+                    // 'area' => \Magento\Framework\App\Area::AREA_FRONTEND,
+                    'area' => \Magento\Framework\App\Area::AREA_ADMINHTML,
+                    'store' => $this->_storeManager->getStore()->getId(),
+                ]
+            )
+            ->setTemplateVars(['data' => $emailTemplateVariables])
+            ->setFrom($senderInfo)
+            ->addTo($receiverInfo['email'], $receiverInfo['name'])
+            ->setReplyTo($senderInfo['email'], $senderInfo['name']);
+        return $template;
+    }
+
+    public function sendEmail($template, $emailTemplateVariables)
+    {
+        $result = [
+            'error' => false
+        ];
+        $this->_template = $this->getTemplateId($template);
+        $this->_inlineTranslation->suspend();
+
+        $senderInfo = [
+            'email' => $this->getConfigValue('trans_email/ident_custom2/email', $this->_storeManager->getStore()->getId()),
+            'name' => $this->getConfigValue('trans_email/ident_general/name', $this->_storeManager->getStore()->getId())
+        ];
+        $receiverInfo = [
+            'email' => $emailTemplateVariables['email'],
+            'name' => $emailTemplateVariables['name']
+        ];
+        $this->generateTemplate($emailTemplateVariables, $senderInfo, $receiverInfo);
+
+        try {
+            $transport = $this->_transportBuilder->getTransport();
+            $transport->sendMessage();
+            $result = [
+                'error' => false,
+                'message' => 'Email is sent successfully'
+            ];
+        } catch (\Exception $e) {
+            $result = [
+                'error' => true,
+                'message' => $e->getMessage()
+            ];
+        }
+
+        $this->_inlineTranslation->resume();
+        // var_dump($result);exit;
+        return $result;
+    }
+
+    public function sendEmailHelloWorldInvalid($emailTempVariables)
+    {
+        $this->sendEmail(self::EMAIL_APPROVAL_INVALID, $emailTempVariables);
+    }
+}
+
+~~~~~~~~~~~
+4. app\etc\config.xml
+
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
+    <default>
+        <helloworld>
+            <email>
+                <email_template_invalid>helloworld_email_email_template_invalid</email_template_invalid>
+            </email>
+        </helloworld>
+    </default>
+</config>
+
+~~~~~~~~~~~~~~~~~~~~
+5.app\etc\adminhtml\system.xml
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
+    <system>
+        <section id="helloworld" translate="label" sortOrder="130" showInDefault="1" showInWebsite="1" showInStore="1">
+            <class>separator-top</class>
+            <label>Hello World</label>
+            <tab>mageplaza</tab>
+            <resource>Mageplaza_HelloWorld::helloworld_config</resource>
+            <group id="email" translate="label" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Email Options</label>
+                <field id="email_template_invalid" translate="label" type="select" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Email template documents of proof are invalid</label>
+                    <comment>email-template-comment</comment>
+                    <source_model>Magento\Config\Model\Config\Source\Email\Template</source_model>
+                </field>
+            </group>
+        </section>  
+    </system>
+</config>
+
+~~~~~~~~~~~~~~~~~~~~~~~~
+6.app\etc\email_templates.xml
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Email:etc/email_templates.xsd">
+    <template id="helloworld_email_email_template_invalid" file="helloworld_email_template_invalid.html" type="html" label="Email template invalid" module="Mageplaza_HelloWorld" area="frontend"/>
+</config>
+
+~~~~~~~~~~~~~~~~~~~~~~~~
+7. app\view\adminhtml\email\helloworld_email_template_invalid.html
+<table class="message-details">
+    <tr>
+        <td><strong>{{trans "Name"}}</strong></td>
+        <td>{{var data.name}}</td>
+    </tr>
+    <tr>
+        <td><strong>{{trans "Email"}}</strong></td>
+        <td>{{var data.email}}</td>
+    </tr>
+    <tr>
+        <td><strong>{{trans "Phone"}}</strong></td>
+        <td>{{var data.phone}}</td>
+    </tr>
+</table>
+<p><strong>{{trans "Message"}}</strong></p>
+<p>{{var data.message}}</p>
+
+
+
+
+
+
+
+
+
+
+
+
+

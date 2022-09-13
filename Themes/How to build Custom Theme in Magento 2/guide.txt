@@ -1,0 +1,88 @@
+1. /app/design/frontend/Pronko/CustomTheme/registration.php
+
+<?php
+/**
+ * Copyright © 2015 Magento. All rights reserved.
+ * See COPYING.txt for license details.
+ */
+\Magento\Framework\Component\ComponentRegistrar::register(
+	\Magento\Framework\Component\ComponentRegistrar::THEME,
+	'frontend/Pronko/CustomTheme',
+	__DIR__
+);
+
+
+~~~~~~~~~~~~~~
+2. /app/design/frontend/Pronko/CustomTheme/theme.xml
+
+<theme xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Config/etc/theme.xsd">
+    <title>Custom Theme</title>
+    <parent>Magento/luma</parent>
+</theme>
+
+
+~~~~~~~~~~~~~~~~~~~~
+3./app/design/frontend/Pronko/CustomTheme/composer.json
+
+{
+"name": "pronko/custom-theme",
+"description": "N/A",
+"require": {
+	"magento/theme-frontend-luma": "100.1.*",
+	"magetno/framework": "100.1.*"
+},
+"type": "magento2-theme",
+"version": "1.0.0",
+"autoload": {
+	"files": [
+		"registration.php"
+	]
+}
+}
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+4. Adminhtml Panel -> Content ->  Theme -> Edit
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~
+5. /app/design/frontend/Pronko/CustomTheme/Magento_Theme/layout/default.xml
+
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright © Magento, Inc. All rights reserved.
+ * See COPYING.txt for license details.
+ */
+-->
+<page layout="2columns-left" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <body>
+        <referenceBlock name"logo">
+		<arguments>
+			<argument name="logo_file" xsi:type="string">images/custom-design.svg</argument>
+			<argument name="logo_alt" xsi:type="string">Custom Design</argument>
+			<argument name="logo_img_width" xsi:type="string">250</argument>
+			<argument name="logo_img_height" xsi:type="string">40</argument>
+		</arguments>
+	</referenceBlock>
+    </body>
+</page>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

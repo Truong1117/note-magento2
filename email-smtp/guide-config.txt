@@ -1,0 +1,1 @@
+https://magento.stackexchange.com/questions/124439/custom-email-template-in-magento2

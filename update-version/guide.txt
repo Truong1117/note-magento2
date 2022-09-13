@@ -1,0 +1,44 @@
+https://devdocs.magento.com/guides/v2.4/comp-mgr/cli/cli-upgrade.html
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+composer require magento/composer-root-update-plugin=~1.0 --no-update
+
+composer -vvvv update
+
+cp composer.json composer.json.bak
+
+composer require magento/product-community-edition=2.3.5-p2 --no-update
+
+php -dmemory_limit=5G composer.phar require magento/product-community-edition=2.3.4 --no-update 
+
+composer -vvvv update
+
+rm -rf var/cache/*
+rm -rf var/page_cache/*
+rm -rf generated/code/*
+
+bin/magento setup:upgrade
+
+php -dmemory_limit=5G
+
+~~~~~~~~~~~~~~~
+composer dump-autoload
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+https://devdocs.magento.com/guides/v2.3/release-notes/release-notes-2-3-5-open-source.html
+
+You need to increase memory allocated to php. To increase memory, execute command php --ini . Findout loaded php.ini. It should be like
+
+Configuration File (php.ini) Path: /etc/php5/cli
+Loaded Configuration File:         /etc/php5/cli/php.ini
+Scan for additional .ini files in: /etc/php5/cli/conf.d
+Additional .ini files parsed:      /etc/php5/cli/conf.d/05-opcache.ini,
+Go to current loaded php.ini (/etc/php5/cli/php.ini) and findout memory_limit parameter. Increase the value against memory_limit parameter to 256M or 512M.
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+php -dmemory_limit=5G composer.phar -vvvv update
+
+php -dmemory_limit=5G composer.phar require magento/product-community-edition=2.3.5-p1 --no-update 

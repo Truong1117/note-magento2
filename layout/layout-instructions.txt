@@ -1,0 +1,62 @@
+Manage layouts
+
+~ To make layout changes available on every page, modify the default.xml file. 
+
+~ For example, layout changes added to app/code/Vendor/Module/view/frontend/layout/default.xml 
+are loaded on all pages. 
+
+~ Use these layout instructions to:
+
+	~~ Move a page element to another parent element.
+	~~ Add content.
+	~~ Remove a page element.
+	~~ Arrange the element position.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+I. Common layout instructions
+
+1. block:
+Details: A block is a unit of page output that renders some distinctive content 
+(anything visually tangible for the end-user), such as a piece of information or a user interface element.
+
+Ex: <block class="Magento\Catalog\Block\Product\ListProduct" name="category.products.list" as="product_list" template="Magento_Catalog::product/list.phtml"/>
+
+2. container:
+
+A structure without content that holds other layout elements such as blocks and containers.
+
+Details: A container renders child elements during view output generation. It can be empty or it can 
+contain an arbitrary set of <container> and <block> elements. If the <container> is empty, and there is 
+no child <block> available, it will not be displayed in the frontend source code.
+
+Ex: 
+<container name="div.sidebar.additional" htmlTag="div" htmlClass="sidebar sidebar-additional" after="div.sidebar.main">
+    <container name="sidebar.additional" as="sidebar_additional" label="Sidebar Additional"/>
+</container>
+
+3. block vs. container
+
+~ Blocks represents the end of the chain in rendering HTML for Magento.
+
+~ Containers contain blocks and can wrap them in an HTML tag.
+
+~ Containers do not render any output if there are no children assigned to them.
+
+
+4. before and after attributes
+
+
+ATTRIBUTE	VALUE		DESCRIPTION
+
+before		Dash (-)	The block displays before all other elements in its parent node.
+
+before		[element name]	The block displays before the named element.
+
+before	Empty value or [element name] is absent	Use the value of after. If that value is empty or absent as well, the element is considered as non-positioned.
+
+after		Dash (-)	The block displays after all other elements in its parent node.
+
+after		[element name]	The block displays after the named element.
+
+after	Empty value or [element name] is absent	Use the value of before. If that value is empty or absent as well, the block is considered as non-positioned.
+

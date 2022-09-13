@@ -1,0 +1,26 @@
+app/code/Commercers/BWare/view/adminhtml/layout/catalog_product_edit.xml
+
+<?xml version="1.0"?>
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <head>
+        <link src="Commercers_BWare::js/product/validate-number-joule.js"/>
+    </head>
+</page>
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+app/code/Commercers/BWare/view/adminhtml/web/js/product/validate-number-joule.js
+
+require(
+    [
+        'Magento_Ui/js/lib/validation/validator',
+        'jquery',
+        'mage/translate'
+    ], function(validator,$){
+        validator.addRule(
+            'validate-number-joule',
+            function (v) {
+                return /^[0-9.]+$/.test(v)
+            }
+            ,$.mage.__('Please enter a valid number and dot.'),
+        );
+    });

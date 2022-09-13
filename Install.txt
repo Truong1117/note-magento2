@@ -1,0 +1,75 @@
+Step1:Create a new Composer project:
+$ composer create-project --repository-url=https://repo.magento.com/ magento/project-community-edition myo_m2_dev
+
+Step2: Example - Minor release (Don't necessary)
+$ composer create-project --repository-url=https://repo.magento.com/ magento/project-enterprise-edition=2.3.0 m2-truongdong
+
+Step3: Example - Quality patch (Don't necessary)
+$ composer create-project --repository-url=https://repo.magento.com/ magento/project-enterprise-edition=2.3.3 m2-truongdong
+
+Step4: Example - Security patch (Don't necessary)
+$ composer create-project --repository-url=https://repo.magento.com/ magento/project-enterprise-edition=2.3.2-p1 m2-truongdong
+
+Step5: Set file permissions
+$ cd /var/www/html/myo_m2_dev
+find var generated vendor pub/static pub/media app/etc -type f -exec chmod g+w {} +
+find var generated vendor pub/static pub/media app/etc -type d -exec chmod g+ws {} +
+chown -R magento2:www-data .
+chmod u+x bin/magento
+
+Step6: Open conf.d/
+cd /etc/nginx/conf.d
+-copy: sudo cp 8season.conf myo-m2-dev.conf
+-edit: sudo nano myo-m2-dev.conf
+-delete: sudo rm -ri [name_file]
+finally: 
+sudo service apache2 stop
+sudo service nginx restart
+
+check: sudo nginx -t
+
+Step7: Install Magento
+$ bin/magento setup:install \
+--base-url=http://myo-m2-dev.local \
+--db-host=localhost \
+--db-name=myo_m2_dev \
+--db-user=root \
+--db-password=@Nt1h4ck \
+--admin-firstname=admin \
+--admin-lastname=admin \
+--admin-email=admin@admin.com \
+--admin-user=admin \
+--admin-password=admin123 \
+--language=en_US \
+--currency=USD \
+--timezone=America/Chicago \
+--use-rewrites=1
+
+Step 8: Remember config Ip in host local
+
+~~~~~~~~~~~~~~~~~~~
+cd <your Magento install dir> 
+
+find . -type f -exec chmod 644 {} \;                        // 644 permission for files
+
+find . -type d -exec chmod 755 {} \;                        // 755 permission for directory 
+
+find ./var -type d -exec chmod 775 {} \;                // 777 permission for var folder    
+
+find ./pub/media -type d -exec chmod 777 {} \;
+
+find ./pub/static -type d -exec chmod 777 {} \;
+
+chmod 777 ./app/etc
+
+chmod 644 ./app/etc/*.xml
+
+chown -R :<web server group> .
+
+chmod u+x bin/magento
+
+
+
+
+
+

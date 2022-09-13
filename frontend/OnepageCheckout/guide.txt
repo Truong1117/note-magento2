@@ -1,0 +1,13 @@
+ this.isVisible.subscribe(function (value) {
+                    if (value) {
+                        $('#checkout-insic-step').addClass('current-step');
+                        $('#checkout-insic-step').removeClass('complete-step');
+                    } else {
+                        if(stepNavigator.getActiveItemIndex() == 0){
+                            $('#checkout-insic-step').addClass('complete-step');
+                            $('#checkout-insic-step').removeClass('current-step');
+                        }else{
+                            $('#checkout-insic-step').removeClass('complete-step');
+                        }
+                    }
+                });

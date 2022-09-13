@@ -1,0 +1,59 @@
+Locate templates
+
+~ To locate the template that is responsible for a specific part of the storefront or Admin,
+you can use Magento built-in template hints.
+
+~ To enable template hints:
+
+	1. Click Stores > Settings > Configuration > ADVANCED > Developer.
+
+	2. In the Scope: dropdown in the upper-left corner select the view for which you want the template 
+	hints.
+
+	3. In the Debug tab, set Template Path Hints for storefront to Yes. To enable path hints for Admin set
+Template Path Hints for Admin to Yes.
+
+	4. To save the changes, click Save Config in the upper-right corner.
+
+Debug:
+	Enable Template Path Hints for Storefront : yes
+	
+	Enable Hints for Storefront with URL: yes
+
+	Enable Template Path Hints for Admin: no
+
+	Add Block Class Type to Hints: no
+
+bin/magento cache:clean config full_page
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Locate layouts
+
+~ After you have determined the module, you can search for the layout in the following locations:
+
+	1. <current_theme_dir>/<Namespace>_<Module>/layout/
+	
+	2. <parent_theme(s)_dir>/<Namespace>_<Module>/layout/
+
+	3. <module_dir>/view/frontend/layout/
+
+	4. <module_dir>/view/base/layout/
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Locate styles
+
+1. Theme styles <current_theme_dir>/web/css/
+
+2. Module theme styles <current_theme_dir>/<Namespace>_<Module>/web/css/
+
+3. Parent theme styles <parent_theme_dir>/web/css/
+
+4. Parent theme Module styles <parent_theme_dir>/<Namespace>_<Module>/web/css/
+
+5. Module styles for the frontend area <module_dir>/view/frontend/web/css/
+
+6. Module styles for the base area <module_dir>/view/base/web/css/
+
+
+

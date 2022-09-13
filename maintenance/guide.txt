@@ -1,0 +1,25 @@
+bin/magento maintenance:enable
+
+bin/magento maintenance:status
+
+php bin/magento maintenance:enable --ip=14.167.15.92
+
+bin/magento deploy:mode:set developer -s
+
+bin/magento deploy:mode:set default
+
+bin/magento deploy:mode:set production -s
+
+bin/magento deploy:mode:show
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+1. If you’re changing from production mode to developer mode, delete the contents of the var/generation and var/di directories:
+rm -rf public_html_prelive/var/di/* <your Magento install dir>/var/generation/* 
+
+rm –rf public_html_prelive/generated/metadata/* public_html_prelive/generated/code/*
+
+rm –rf /public_html/generated/metadata/* /public_html/generated/code/*
+
+2. Set the mode:
+bin/magento deploy:mode:set developer

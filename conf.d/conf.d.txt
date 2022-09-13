@@ -1,0 +1,60 @@
+/etc/nginx/conf.d
+
+show list: ls -la
+
+copy: sudo cp [8seasons.config] magento2-truongdong.conf
+
+Chuyen den thu muc:
+sudo nano magento2-truongdong.config
+
+-In magento2-truongdong.config
+server{
+	listen 80;
+	server_name magento2-truongdong.local;	
+	set $MAGE_ROOT /var/www/html/magento2-truongdong;	local folder
+	include /var/www/html/magento2-truongdong/nginx/conf/sample;
+}
+
+finally: sudo service nginx restart
+
+magento indexer:reindex
+
+Phan quyen lai thu muc:
+
+sudo chown -R magento2:www-data [name_folder]
+
+sudo chmod 775 [name_folder]
+
+sudo chmod 777 [name_folder]
+
+cd /etc/nginx/conf.d 
+
+sudo service apache2 restart
+
+sudo service apache2 stop
+
+sudo service nginx restart
+
+
+~~~~~~~~~~~~~~~~~~~~~~
+
+Read & View error:
+
+cd /var/log/nginx
+
+sudo chmod 777 /var/log/nginx/error.log
+
+find . -type d -exec chmod 755 {} \; && find . -type f -exec chmod 644 {} \; && chmod u+x bin/magento
+
+
+
+
+
+
+
+
+
+
+
+
+

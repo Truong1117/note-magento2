@@ -1,0 +1,118 @@
+Enable flat catalog categories/products
+Stores->configuration->catalog->catalog:
+use flat catalog category: yes
+use flat catalog product: yes
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+2. Merge & Minify Javascript/Css
+Stores->Configuration->Developer:
+CSS Settings:
+ Merge CSS File :Yes
+ Minify CSS File: Yes
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+3. Magento Updates
+System->Web Setup Wizard -> System Upgrade
+
+~~~~~~~~~~~~~~
+4. Update 3rd party extensions
+
+~~~~~~~~~~~~
+5. Scheduled Indexing
+System->Index Management
+
+~~~~~~~~~~~`
+6. Disable Debug Logs
+Stores->Configuration->System-> Debug
+
+~~~~~~~~~~~~
+7. Enable production Mode
+
+~~~~~~~~~~~
+8. Increase PHP Memory Limit
+
+List all files and folders in the current directory
+ls -la 
+
+bin/magento deploy:mode:show
+
+bin/magento deploy:mode:set production
+
+Open .htaccess file in nano text-editor
+nano .htaccess
+
+change: php_value memory_limit 756M
+to:	php_value memory_limit 2G
+
+~~~~~~~~~~~~
+Tip 10 WYSIWYG Editor
+
+Stores->configuration->General->Content Management
+Enable WYSIWYG: Disabled by Default
+~~~~~~~~~~~~
+Tip 12 Redirect Loops (Read More: https://youtu.be/wpfXduH0Q_U)
+
+
+~~~~~~~~~~
+Tip 14 Enable Backups
+Stores->configuration->Advanced->system
+Backup setting: enable
+
+~~~~~~~~~
+Tip 15 Remove partner modules
+
+https://digitalstartup.co.uk/t/how-to-safely-remove-partner-modules/579
+
+~~~~~~~~~
+Tip 16 Admin Sessions
+Stores->configuration->Advanced->Admin
+Admin Session Lifetime (seconds): 
+
+~~~~~~~~
+Tip 17 Sender Names
+Stores->configuration->General->Store Email Addresses
+
+~~~~~~~~
+Tip 20 Customer Passwords
+Stores->configuration->customers->customer configuration 
+Number of Required Character Classes : 2
+
+~~~~~~~~
+Tip 22 Startup Page
+Stores->configuration->advanced->admin
+Startup Page
+
+~~~~~~~
+Tip 23 JS Bundling
+Stores->configuration->advanced->developer
+JavaScript Settings-> Enable JavaScript Bundling: no
+
+~~~~~~~
+Tip 24 JS/CSS Optimisation
+Stores->configuration->advanced->developer
+
+~~~~~~~
+Tip 31 Remove Accounts
+System->All Users
+Edit
+This account is: Inactive
+
+~~~~~~~
+Tip 34 reCaptcha
+
+Stores->configuration -> security-> google reCaptcha
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,178 @@
+I. Module and theme layout files
+
+~ Magento 2 layouts are provided by different application components.
+We can split them in two major groups Base layout and Theme layout.
+
+1. Base layouts:
+
+~ This Layout files are provided by modules. We can find page configuration and generic layout 
+files on this path:
+
+module_dir/view/frontend/layout
+
+~ And page layout files on path:
+
+module_dir/view/frontend/page_layout
+
+~ The main file of Base layout, if you wish to check it, is located on path:
+
+Magento_Theme_module_dir/view/frontend/layout/default.xml
+
+
+2. Theme layouts:
+
+~ Theme layouts are logical files provided by Magento themes. Here we can find page configuration 
+and generic layout files. Check them on path:
+
+theme_dir/Namespace_Module/layout
+
+~ Also, the page layout files are on path:
+
+theme_dir/Namespace_Module/page_layout
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+II. Override a layout
+
+~ Above mentioned basic are necessary in order to understand how to properly override Magento 2 layout. 
+The layout needs to be properly overridden when we perform some kind of customization, 
+for example when we:
+
+	~~ Modify method arguments
+
+	~~ Remove blocks and/or containers
+
+	~~ Set up XML attributes of blocks and containers
+
+	~~ Remove block arguments
+
+	~~ Modify and suppressing handles inclusion
+
+	~~ Remove all handle instructions by declaring an overriding layout file with an empty handle
+
+1. Override base layouts
+
+~ To override base layout file (layout provided by the module) we need to put a layout file 
+with the same name in the following location:
+
+/Namespace_Module/layout/override/base/layout.xml
+
+~ These file override the following layout:
+
+/view/frontend/layout/layout.xml
+
+2. Override theme layouts
+~ To overriding theme layout (override a parent theme layout) put a layout file with the same name 
+in the following location:
+
+theme_dir/Namespace_Module/layout/override/theme/Vendor/theme/layout.xml
+
+~ These files override the following layouts:
+parent_theme_dir/Namespace_Module/layout/layout.xml
+
+o override page layout files, use ‘page_layout’ directory name instead of ‘layout’.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+III. Product page override
+
+~ Now when we are familiar with layout overriding rules, let’s make a real life example. 
+Let’s override product page layout.
+
+1. Overriding product page for specific products:
+
+~ For example, our client has two or more types of products and on top of that, 
+client also has one special product which is totally different. So client also wishes to present 
+that product in different product page. Basically, we need at least three different product page layouts.
+
+~ Luckily Magento 2 provides this kind of flexibility by using native addPageLayoutHandles method. 
+Mentioned method provides possibilities of overriding layout using:
+
+	~~ Product ID
+	~~ Product SKU
+	~~ Product TYPE
+
+~ On top of that, method will also support your custom product type. For instance if we create a product type
+with the name “inchoo”, you can then create a file called catalog_product_view_type_inchoo.xml to handle 
+specific layouts for this type of products.
+
+~ So, let start first with overriding layout for just one specific product.
+
+~ In order to do that we need to follow this steps:
+
+	1. Create new layout file inside our theme scope, the name of layout file will be: 
+	catalog_product_view_id_number and we’ll place it in:
+
+theme_dir/Namespace_Module/layout/catalog_product_view_id_number.xml
+
+	~ Override what we need inside of layout file (remove blocks, add new blocks etc.).
+
+	~ Clear Magento’s cache and reload page.
+
+~ We are preferring to use product ID. But if product ID isn’t good option for you, 
+you can use SKU number for targeting product, in that case your layout file need have name in this form:
+catalog_product_view_sku_productsku.xml
+
+~ Now let’s create unique product page for specific product type. As you probably know Magento by default 
+has few different product types (bundle, configurable, downloadable etc.). So for example, 
+if we wish to have different layout for downloadable products, we need to use corresponding product type name 
+to target that layout.
+
+~ In order to override downloadable products, follow this steps:
+
+	1. Create new layout catalog_product_view_type_downloadable.xml file inside Magento theme
+
+theme_dir/Namespace_Module/layout/catalog_product_view_type_downloadable.xml
+
+	2. Override what we need inside of layout file (remove blocks, add new blocks etc.).
+	
+	3. Clear Magento’s cache and reload page.
+
+~ Same naming principle can be followed for other type of products, like this:
+	~~ catalog_product_view_type_simple.xml
+
+	~~ catalog_product_view_type_configurable.xml
+
+	~~ catalog_product_view_type_grouped.xml
+
+	~~ catalog_product_view_type_bundle.xml
+
+	~~ catalog_product_view_type_virtual.xml
+
+	~~ catalog_product_view_type_downloadable.xml
+
+
+~ Important note: Current Magento 2 version has bug with configurable product type. 
+Unfortunately it isn’t possible to override configurable products just by creating new 
+catalog_product_view_type_configurable.xml layout file. We hope that the next version of Magento 
+will solve this bug. Stay tuned here.
+
+~ The example is short but I hope that this article can help you with overriding layouts.
+
+~ If you have issues on your web store and you need frontend assistance, contanct us for 
+UX & usability audit.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

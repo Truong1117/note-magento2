@@ -1,0 +1,23 @@
+<script type="text/x-magento-init">
+{
+    "*": {
+       "js/hello-world":{
+	   "a":1,"b":2
+        }
+    }
+}
+</script>
+~~~~~~~~~~~~~~~~~~~~~
+app/design/frontend/Magento/blank/web/js/hello-world.js
+
+define(["jquery","underscore"],
+
+    function($, _) {
+    
+    return function(config, element) {
+
+          console.log(config)        === Object {a: 1 , b: 2}
+
+          console.log(element)       === false
+    }
+})

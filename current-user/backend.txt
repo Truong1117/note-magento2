@@ -1,0 +1,17 @@
+	protected $_authSession;
+
+	public function __construct(
+		\Magento\Backend\Model\Auth\Session $authSession,
+		Context $context
+	) {
+		$this->_authSession = $authSession;
+		parent::__construct($context);
+	}
+
+public function getCurrentUser()
+	{
+		return $this->authSession->getUser();
+	}
+	// $this->getCurrentUser->getUsername(); //get admin user name
+
+	// $this->getCurrentUser->getEmail();   //get current admin email

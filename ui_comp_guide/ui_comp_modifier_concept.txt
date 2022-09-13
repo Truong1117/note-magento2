@@ -1,0 +1,81 @@
+https://devdocs.magento.com/guides/v2.4/ui_comp_guide/concepts/ui_comp_modifier_concept.html
+~~~~~~~~~~~~~~~~~~~~~
+Step 1:
+
+In your custom module, add a class that implements \Magento\Ui\DataProvider\Modifier\ModifierInterface with the following methods:
+
+~ modifyData(): for modifying UI component’s data (for example, the list of options for a select element)
+
+~ modifyMeta(): for modifying UI component’s metadata (for example, name, label, description, type)
+
+Sample modifier:
+
+<?php
+
+use Magento\Ui\DataProvider\Modifier\ModifierInterface;
+
+class Example implements ModifierInterface
+{
+    public function modifyMeta(array $meta)
+    {
+        $meta['test_fieldset_name'] = [
+            'arguments' => [
+                'data' => [
+                    'config' => [
+                        'label' => __('Label For Fieldset'),
+                        'sortOrder' => 50,
+                        'collapsible' => true
+                    ]
+                ]
+            ],
+            'children' => [
+                'test_field_name' => [
+                    'arguments' => [
+                        'data' => [
+                            'config' => [
+                                'formElement' => 'select',
+                                'componentType' => 'field',
+                                'options' => [
+                                    ['value' => 'test_value_1', 'label' => 'Test Value 1'],
+                                    ['value' => 'test_value_2', 'label' => 'Test Value 2'],
+                                    ['value' => 'test_value_3', 'label' => 'Test Value 3'],
+                                ],
+                                'visible' => 1,
+                                'required' => 1,
+                                'label' => __('Label For Element')
+                            ]
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        return $meta;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function modifyData(array $data)
+    {
+        return $data;
+    }
+}
+
+~~~~~~~~~~~~~
+Step 2: Declare your modifier in your module Di configuration <Your_Module_dir>/etc/adminhtml/di.xml. This declaration looks like the following:
+
+<virtualType name="%YourNamespace\YourModule\DataProvider\Modifier\Pool%" type="Magento\Ui\DataProvider\Modifier\Pool">
+     <arguments>
+         <argument name="modifiers" xsi:type="array">
+             <item name="modifier_name" xsi:type="array">
+                 <item name="class" xsi:type="string">%YourNamespce\YourModule\Modifier\YourModifierClass%</item>
+                 <item name="sortOrder" xsi:type="number">10</item>
+             </item>
+         </argument>
+     </arguments>
+</virtualType>
+
+where YourNamespace\YourModule\DataProvider\Modifier\Pool is a virtual class.
+
+

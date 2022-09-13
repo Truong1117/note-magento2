@@ -1,0 +1,13 @@
+ protected $scopeConfig;
+
+ const XML_PATH_STORE_OPTIONS = 'ordergrid/web_store_options/store_id';
+
+
+public function __construct(
+        \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,    
+    ) {
+        $this->scopeConfig = $scopeConfig;
+    }
+
+$storeScope = \Magento\Store\Model\ScopeInterface::SCOPE_STORE;
+$storeId = $this->scopeConfig->getValue(self::XML_PATH_STORE_OPTIONS, $storeScope);

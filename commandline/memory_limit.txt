@@ -1,0 +1,15 @@
+php -r "echo ini_get('memory_limit').PHP_EOL;"
+
+php -dmemory_limit=5G bin/magento
+
+
+For Compilation command,
+
+php -dmemory_limit=5G bin/magento setup:di:compile
+For Deployment
+
+php -dmemory_limit=5G bin/magento setup:static-content:deploy
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+https://www.choosepizzi.net/magento-2-cli-command_and_commons_probem/

@@ -1,0 +1,11 @@
+Adminhtml Panel -> Stores -> Customers -> Customer Configuration -> Captcha
+
+https://magento.stackexchange.com/questions/97114/magento-2-show-captcha-at-contact-us-form#:~:text=2%20Answers&text=In%20order%20to%20add%20CAPTHA,you%20update%20configuration%2C%20clean%20cache.
+
+
+link: 
+https://www.google.com/recaptcha/admin/site/352408864/settings
+
+https://www.google.com/recaptcha/admin/site/352408864
+
+https://www.mageplaza.com/blog/how-to-add-google-recaptcha-into-magento-2.html

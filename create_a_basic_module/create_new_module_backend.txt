@@ -1,0 +1,133 @@
+I. Module setup
+
+1. Create the following folders:
+
+Commercers_MasterExport
+~ app/code/Commercers/MasterExport
+
+~~~~~~~~~~~~~~~~~~~~~
+
+2. create a module.xml
+
+~ app/code/Commercers/MasterExport/etc/module.xml
+
+<?xml version="1.0"?>
+ 
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Module/etc/module.xsd">
+    <module name="Commercers_MasterExport" setup_version="1.0.0">
+    </module>
+</config>
+
+~~~~~~~~~~~~~~~~~~~~~
+
+3. create a registration.php 
+
+app/code/Commercers/MasterExport/registration.php 
+
+<?php
+\Magento\Framework\Component\ComponentRegistrar::register(
+    \Magento\Framework\Component\ComponentRegistrar::MODULE,
+    'Commercers_MasterExport',
+    __DIR__
+);
+
+php bin/magento setup:upgrade
+
+~~~~~~~~~~~~~~~~~~~~~
+II. Creating a controller
+
+1. create a routes.xml
+
+app/code/Commercers/MasterExport/etc/adminhtml/routes.xml
+
+<?xml version="1.0"?>
+ 
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:App/etc/routes.xsd">
+    <router id="standard">
+        <route id="masterexport" frontName="masterexport">
+            <module name="Commercers_MasterExport" />
+        </route>
+    </router>
+</config>
+
+~~~~~~~~~~~~~~~~~
+
+2.  create the Index.php 
+
+app/code/Commercers/MasterExport/Controller/Adminhtml/MasterExport/Index.php
+
+3. Creating a block
+
+Create a Helloworld.php
+
+app/code/Commercers/MasterExport/Block/Adminhtml/MasterExport.php
+
+~~~~~~~~~~~~~~~~~~~~~
+
+III. Creating a layout and template files
+
+1. create a masterexport_masterexport_index.xml 
+
+app/code/Commercers/MasterExport/view/adminhtml/layout/masterexport_masterexport_index.xml
+
+2. Create a master_export.phtml
+
+app/code/Commercers/MasterExport/view/adminhtml/templates/master_export.phtml
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

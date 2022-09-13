@@ -1,0 +1,60 @@
+http://m2-truongdong.local/admin_1r4g2f/
+/var/www/html/m2_truongdong/app/etc/env.php
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+System -> Permissions -> User Roles 
+
+To Create Admin Admin ACL
+Step 1: Create ACL rule
+Step 2: Flush Magento cache
+Step 3: Check ACL rule
+~~~~~~~~~~~~~~~~~~~~~~~~
+Step 1: Create ACL rule
+File: app/code/Mageplaza/HelloWorld/etc/acl.xml
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Acl/etc/acl.xsd">
+    <acl>
+        <resources>
+            <resource id="Magento_Backend::admin">
+                <resource id="Mageplaza_HelloWorld::helloworld" title="Hello World" sortOrder="51">
+                    <resource id="Mageplaza_HelloWorld::post" title="Posts" sortOrder="10"/>
+                    <resource id="Mageplaza_HelloWorld::helloworld_configuration" title="Configuration" sortOrder="99" />
+                </resource>
+                <resource id="Magento_Backend::stores">
+                    <resource id="Magento_Backend::stores_settings">
+                        <resource id="Magento_Config::config">
+                            <resource id="Mageplaza_HelloWorld::helloworld_config" title="Hello World"/>
+                        </resource>
+                    </resource>
+                </resource>
+            </resource>
+        </resources>
+    </acl>
+</config>
+
+Step 2: Flush Magento cache
+***Flush Cache Storage:
+php bin/magento cache:clean
+php bin/magento c:c
+***Flush Magento cache
+php bin/magento cache:flush
+php bin/magento c:f
+
+Step 3: Check ACL rule
+File: app/code/Mageplaza/HelloWorld/etc/adminhtml/menu.xml
+<add id="Mageplaza_HelloWorld::helloworld" title="Hello World" module="Mageplaza_HelloWorld" sortOrder="51" resource="Mageplaza_HelloWorld::helloworld"/>
+
+System configuration: Put the ACL resource to limit access to this section page.
+File: app/code/Mageplaza/HelloWorld/etc/adminhtml/system.xml
+<section id="helloworld" translate="label" sortOrder="130" showInDefault="1" showInWebsite="1" showInStore="1">
+        ….
+            <resource>Mageplaza_HelloWorld::helloworld_configuration</resource>
+        ….
+</section>
+
+Example: File: vendor/magento/module-customer/Controller/Adminhtml/Index.php
+protected function _isAllowed()
+{
+ return $this->_authorization->isAllowed('Magento_Customer::manage');
+}
+
+

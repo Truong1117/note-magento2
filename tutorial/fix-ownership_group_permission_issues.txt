@@ -1,0 +1,33 @@
+Owner/Group
+
+Owner Literally "owns" the Folder/File
+
+Group Contains a collection of "users"
+
+~~~~~~~~~~~~~~~~~~~~~~~~
+fixing the issue
+
+sudo chown -R magento:www-data /var/www/html:
+
+sudo: Run command as superuser
+chown: Change ownership
+-R: Apply to all Files and Folders within the destination folder (aka recursively)
+magento:www-data: To owner "magento" and group "www-data"
+/var/www/html/: is the directory I want to copy
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Cron issues
+Check your own cron tasks
+
+crontab: Run crontab command
+-l: List cron tasks
+
+Check another user cron tasks
+
+	sudo crontab -l -u magento
+
+sudo: Run command as superuser
+crontab: Run crontab command
+-l: List cron tasks
+-u: For a specific user
+magento: Username you want to specify

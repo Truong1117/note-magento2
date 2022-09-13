@@ -1,0 +1,70 @@
+***
+ Events List
+***
+Table of contents
+~ Dispatch event
+~ Catch and handle event
+	~~ Event area
+	~~ Create events.xml
+	~~ Observer
+~ List all events in Magento 2
+	~~ Events in PHP Files
+	~~ JavaScript Varien Events
+
+~~~~~~~~~~~~~~~~~~~~~~~~
+1. Dispatch event
+File: app/code/Mageplaza/HelloWorld/Controller/Index/Test.php
+<?php
+
+namespace Mageplaza\HelloWorld\Controller\Index;
+
+class Test extends \Magento\Framework\App\Action\Action
+{
+	public function execute()
+	{
+		$textDisplay = new \Magento\Framework\DataObject(array('text' => 'Mageplaza'));
+		$this->_eventManager->dispatch('mageplaza_helloworld_display_text', ['mp_text' => $textDisplay]);
+		echo $textDisplay->getText();
+		exit;
+	}
+}
+The dispatch method will receive 2 arguments: an unique event name and an array data
+In this example, we add the data object to the event and call it back to display the text.
+https://www.mageplaza.com/magento-2-module-development/magento-2-events.html
+~~~~~~~~~~~~~~~~~~~~~~~~
+2. Catch and handle event
+2.1 Event area
+~ Magento use area definition to manage the store. 
+~ We will have a frontend area and admin area. 
+~ With the configuration file, they can be put in 3 places:
+	~~ Under etc/ folder is the configuration which can be used in both admin and frontend.
+	~~ Under etc/frontend folder will be used for frontend area.
+	~~ Under etc/adminhtml folder will be used for admin area.
+
+~ The same with the event configuration file. You can create events configuration file for each area like this
+	~~ Admin area: app/code/Mageplaza/HelloWorld/etc/adminhtml/events.xml
+	~~ Frontend area: app/code/Mageplaza/HelloWorld/etc/frontend/events.xml
+	~~ Global area: app/code/Mageplaza/HelloWorld/etc/events.xml
+
+~~~~~~~~~~~~~~~~~~~~~~~~~
+3. Create events.xml
+3.1 create an events.xml file in etc/frontend folder.
+File: app/code/Mageplaza/HelloWorld/etc/frontend/events.xml
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Event/etc/events.xsd">
+    <event name="mageplaza_helloworld_display_text">
+        <observer name="mp_display_text" instance="Mageplaza\HelloWorld\Observer\ChangeDisplayText" />
+    </event>
+</config>
+
+3.2: Flush cache 
+php bin/magento c:c
+
+run: http://m2-truongdong.local/helloworld/index/test
+
+~~~~~~~~~~~~~~~~~~~~~~~~
+4. List all events in Magento 2
+4.1 Events in PHP Files:
+https://www.mageplaza.com/magento-2-module-development/magento-2-events.html
+
+

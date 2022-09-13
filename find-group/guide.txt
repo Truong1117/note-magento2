@@ -1,0 +1,3 @@
+/etc/group
+
+link: https://www.linux.com/topic/desktop/how-manage-users-groups-linux/#:~:text=Giving%20groups%20permissions%20to%20directories&text=At%20this%20point%2C%20only%20the,access%20any%20file%20within%20%2FREADERS.&text=At%20this%20point%2C%20any%20member,access%20and%20modify%20files%20within.

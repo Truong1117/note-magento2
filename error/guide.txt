@@ -1,0 +1,11 @@
+https://stackoverflow.com/questions/34629697/how-to-turn-on-error-messages-in-magento-2
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+app/bootstrap.php.
+ini_set('display_errors', 1);
+
+php bin/magento deploy:mode:set developer
+php bin/magento cache:clean
+php bin/magento cache:flush
+
+https://ourcodeworld.com/articles/read/1000/how-to-setup-the-debugging-environment-for-your-development-version-of-magento-2

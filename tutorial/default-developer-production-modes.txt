@@ -1,0 +1,9 @@
+bin/magento deploy:mode:show
+
+bin/magento deploy:mode:set developer
+
+bin/magento deploy:mode:set default
+
+bin/magento deploy:mode:set production
+
+rm -rf generated/metadata/* generated/code/*

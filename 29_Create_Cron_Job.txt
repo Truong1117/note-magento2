@@ -1,0 +1,90 @@
+***
+Create Cron Job in Magento 2
+***
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+1. Run and Create cron job
+~ Create a class within the “Cron” folder
+
+~ Manually setup the cron schedule by using PHP: bin/magento cron:run
+
+~ Find a log in the var/log/system.log after the cronjob has run.
+
+~ Login to Magento 2 Admin panel, do as the path: Stores > Configuration > Advanced > System, then changing scheduler settings per cron group.
+
+~ Finally, run cron from the command line:
+magento cron:run [--group="<cron group name>"]
+
+~ Now, We will add a custom cron in HelloWorld module.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+2. Create crontab.xml
+File: app/code/Mageplaza/HelloWorld/etc/crontab.xml
+
+<?xml version="1.0" ?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Cron:etc/crontab.xsd">
+	<group id="default">
+		<job instance="Mageplaza\HelloWorld\Cron\Test" method="execute" name="mageplaza_helloworld_cron">
+			<schedule>* * * * *</schedule>
+		</job>
+	</group>
+</config>
+
+~ group id: is your cron group name. You can run only cron for single group at a time.
+~ job instance: is class to be instantiated (classpath).
+~ job method: is method in job instance to call.
+~ job name: is Unique ID for this cron job.
+~ schedule: is schedule in cron format. The following graph shows what it consists of:
+
+* * * * * comman to be executed
+1*: Minute (0 - 59)
+2*: Hour (0 - 23)
+3*: Day of month (1 - 31)
+4*: Month (1 - 12)
+5*: Day of week (0 -7) (Sunday = 0 or 7)
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+3.In crontab.xml, we have defined job instance is Mageplaza\HelloWorld\Cron\Test.
+It should create now.
+
+Create Test.php
+File: app/code/Mageplaza/HelloWorld/Cron/Test.php
+
+<?php
+
+namespace Mageplaza\HelloWorld\Cron;
+
+class Test
+{
+
+	public function execute()
+	{
+
+		$writer = new \Zend\Log\Writer\Stream(BP . '/var/log/cron.log');
+		$logger = new \Zend\Log\Logger();
+		$logger->addWriter($writer);
+		$logger->info(__METHOD__);
+
+		return $this;
+
+	}
+}
+
+~ All done, please flush cache and run magento cron:run --group="default" from the command line.
+
+~ To check whether the Cron is working properly, go to var/log/cron.log of your store and you will see the text Mageplaza\HelloWorld\Cron\Test::execute in it.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,61 @@
+<script type="text/x-magento-init">
+    {
+        "*": {
+            "Magento_Theme/js/homePageOfi":{}
+        }
+    }
+</script>
+~~~~~~~~~~~~~~~~~
+app/code/Commercers/Ticket/view/frontend/requirejs-config.js
+
+var config = {
+    map: {
+      "*": {  
+          manageDetailTicket: "Commercers_Ticket/js/manage_detail_ticket"
+      },
+    },
+  };
+  
+~~~~~~~~~~~~~~~
+app/code/Commercers/Ticket/view/frontend/web/js/manage_detail_ticket.js
+
+// // Option 3
+define(["jquery"], function ($) {
+    "use strict";
+    $.widget("mage.manageDetailTicket", {
+      _create: function () {
+        var self = this;
+        var options = self.options;
+        this.manageDetailTicket(options);
+      },
+      manageDetailTicket: function (options) {
+        $("#send_message").click(function () {
+          event.preventDefault();
+          var message = $("#message").val();
+          var postId = $("#postId").val();
+          $.ajax({
+            type: "POST",
+            url: options.url,
+            data: {
+              postId: postId,
+              message: message,
+            },
+            dataType: "json",
+            success: function (response) {
+              $("#message").val('');
+              var itemHtml = "";
+              itemHtml += '<div class="container ' + response.type + ' ">';
+              itemHtml += "<div>";
+              itemHtml += "<p>" + response.type + "</p>";
+              itemHtml += '<span>' + response.created_at + '</span><br>';
+              itemHtml += "<span>" + response.message + "</span>";
+              itemHtml += "</div>";
+              $("#result").append(itemHtml);
+            },
+          });
+        });
+      },
+    });
+    return $.mage.manageDetailTicket;
+  });
+  

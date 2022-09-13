@@ -1,0 +1,3 @@
+https://playground.eu.portal.klarna.com/settings/credentials/api
+
+https://com.begadi.com/index.php/fairnet_admin/system_config/edit/section/payment/key/e6877a14f9f6375d87ee1eb8768b29bf/

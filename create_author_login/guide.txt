@@ -1,0 +1,12 @@
+https://www.htaccesstools.com/htpasswd-%20generator/
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/root/.htaccess
+AuthType Basic
+AuthName "Begadi M2"
+AuthUserFile "/home/begadidev/public_html_prelive/.htpasswd"
+require valid-user
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/root/.htpasswd
+test:................

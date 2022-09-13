@@ -1,0 +1,102 @@
+Magento theme directory
+
+/app/design/frontend/Commercers/Training
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Magento theme declaration
+/app/design/frontend/Commercers/Training/theme.xml
+
+<theme xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Config/etc/theme.xsd">
+   <title>Training</title>
+   <parent>Magento/luma</parent>
+   <media>
+  <preview_image>media/training.jpg</preview_image>
+   </media>
+</theme>
+
+/app/design/frontend/Commercers/Training/media/training.jpg
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Magento theme registration
+
+/app/design/frontend/Commercers/Training/registration.php
+
+<?php
+
+use \Magento\Framework\Component\ComponentRegistrar;
+
+ComponentRegistrar::register(
+    ComponentRegistrar::THEME,
+    'frontend/Commercers/Training',
+    __DIR__
+);
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Applying theme in the admin panel
+
+~ Proceed to the section Content —> Design —> Themes and make sure that the created theme is on the list:
+
+~ If we see the necessary theme on the list, go to Content → Design → Configuration and then click Edit 
+for the website or web store that you want to apply your theme to. Select a theme and save settings.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Creating directories for CSS, JavaScript, images and fonts
+
+~ Let’s create a folder for theme static files. The structure should be following:
+
+/app/design/frontend/Commercers/Training/web/
+/app/design/frontend/Commercers/Training/web/css/source
+/app/design/frontend/Commercers/Training/web/fonts
+/app/design/frontend/Commercers/Training/web/images/logo.jpg
+/app/design/frontend/Commercers/Training/web/js
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Theme logo definition
+
+/app/design/frontend/Commercers/Training/Magento_Theme/layout/default.xml
+
+
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+<body>
+<referenceBlock name="logo">
+<arguments>
+<argument name="logo_file" xsi:type="string">images/logo.jpg</argument>
+<argument name="logo_img_width" xsi:type="number">70</argument>
+<argument name="logo_img_height" xsi:type="number">40</argument>
+</arguments>
+</referenceBlock>
+</body>
+</page>
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Image configuration
+
+/app/design/frontend/Commercers/Training/etc/view.xml
+
+
+<?xml version="1.0"?>
+<view xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Config/etc/view.xsd">
+<media>
+<images module="Magento_Catalog">
+...
+<image id="new_products_content_widget_grid" type="small_image">
+<width>200</width>
+<height>200</height>
+</image>
+...
+</media>
+...
+</view>
+
+
+
+
+
+
+
+
+
+
+
+

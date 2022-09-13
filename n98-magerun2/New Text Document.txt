@@ -1,0 +1,32 @@
+https://github.com/netz98/n98-magerun2
+
+~~~~~~~~~
+Customer Info
+$ php n98-magerun2.phar  customer:info [email] [website]
+
+~~~~~~~~~~
+Create customer
+$ php n98-magerun2.phar  customer:create [email] [password] [firstname] [lastname] [website]
+
+~~~~~~~~~
+List Customers
+$ php n98-magerun2.phar customer:list [--format[="..."]] [search]
+
+~~~~~~~~
+Change customer password
+$ php n98-magerun2.phar customer:change-password [email] [password] [website]
+
+Ex: php n98-magerun2.phar customer:change-password foo@example.com Truong1233213 base
+
+~~~~~~~~
+Create Customer Token for Webapi
+$ php n98-magerun2.phar customer:token:create <email>
+
+~~~~~~~~~
+1. Run a raw DB query
+$ n98-magerun2.phar db:query <sql-query>
+Ex: $ php n98-magerun2.phar db:query "select * from store"
+
+~~~~~~~~~
+2. Open MySQL Console
+$ php n98-magerun2.phar db:console [options]
